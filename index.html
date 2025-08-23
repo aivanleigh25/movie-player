@@ -197,7 +197,17 @@ const extractIMDb = (str='') => {
 };
 
 // this is the script for server
-const buildURL = (server, imdbID) => {
+function buildURL(server, imdbID, season = null, episode = null) {
+  let raw;
+  
+  if (season && episode) {
+    // Series format: /imdbID/season-episode/
+    raw = `https://vidsrc.in/embed/${imdbID}/${season}-${episode}/`;
+  } else {
+    // Movie format
+    raw = `https://vidsrc.in/embed/${imdbID}`;
+  }
+
   switch(server){
     case 'vidsrc':
       return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
@@ -206,13 +216,11 @@ const buildURL = (server, imdbID) => {
     case '2embed':
       return `https://www.2embed.cc/embed/${imdbID}`;
     case 'noads': 
-      // Clean ad-free player using the official demo proxy
-      const raw = `https://vidsrc.in/embed/${imdbID}`;
       return `https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
     default:
       return '';
   }
-};
+}
 
 const setStatus = (msg) => statusText.textContent = msg;
 
