@@ -2,340 +2,262 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Movie Player</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>
-    <h1>🎬 Movie Player</h1>
-  </header>
-
-  <div class="searchbar">
-    <input id="query" placeholder="Search for a movie..."/>
-    <button onclick="searchMovies()">Search</button>
-  </div>
-
-  <div id="results" class="movie-grid"></div>
-
-  <div id="player" class="player">
-    <div class="frame-wrap">
-      <iframe id="movieFrame" allowfullscreen></iframe>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-</body>
-</html>
+  <meta name="color-scheme" content="dark light"/>
+  <style>
+    :root{
+      --bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040;
     }
-    .movie-card {
-      background:var(--panel);border:1px solid var(--border);border-radius:12px;
-      overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
+      background:linear-gradient(120deg,var(--bg),#0b0d12 60%);
+      display:flex; min-height:100vh;
     }
-    .movie-card:hover {transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.35);}
-    .movie-card img {width:100%;height:210px;object-fit:cover;}
-    .movie-card .meta{padding:8px;font-size:12px;color:var(--muted)}
-    .movie-card .title{color:var(--text);font-weight:700;font-size:13px;margin:0 0 4px}
-    .player {
-      margin:20px;background:#000;border:1px solid var(--border);
-      border-radius:18px;overflow:hidden;display:none;
+
+    /* Sidebar */
+    .sidebar{
+      position:fixed; inset:0 auto 0 0; width:120px; background:var(--panel);
+      border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;
     }
-    .player .frame-wrap {position:relative;width:100%;aspect-ratio:16/9;background:#000}
-    iframe {position:absolute;inset:0;width:100%;height:100%;border:0;}
+    .brand{font-weight:800; letter-spacing:.5px; font-size:14px; color:var(--brand); text-transform:uppercase}
+    .navlink{color:var(--muted); text-decoration:none; font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; transition:all .2s ease}
+    .navlink:hover{color:var(--text); background:var(--panel-2)}
+    .navbtn {
+      all: unset;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      text-align: center;
+      transition: all .2s ease;
+    }
+    .navbtn:hover {
+      color: var(--text);
+      background: var(--panel-2);
+    }
+
+    /* Main */
+    .main{margin-left:140px; flex:1; display:flex; flex-direction:column;}
+    .header{padding:22px 20px; background:var(--panel); border-bottom:1px solid var(--border);}
+    .header h1{margin:0; font-size:24px}
+    .header p{margin:6px 0 0; color:var(--muted); font-size:13px}
+
+    .wrap{max-width:1000px; width:100%; margin:22px auto; padding:0 16px}
+
+    .toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px}
+    .input{flex:1; min-width:260px; background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:10px 12px; outline:none}
+    .select,.btn{background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:10px 12px; cursor:pointer}
+    .btn{display:inline-flex; align-items:center; gap:8px; font-weight:700}
+    .btn:hover{filter:brightness(1.1)}
+    .btn.primary{background:var(--brand); border-color:transparent; color:#0a1024}
+    .btn.ghost{background:transparent}
+
+    .player{margin-top:16px; background:#000; border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,.45)}
+    .player .frame-wrap{position:relative; width:100%; aspect-ratio:16/9; background:#000}
+    iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+
+    .status{margin-top:10px; color:var(--muted); font-size:12px; display:flex; gap:10px; align-items:center}
+    .status .dot{width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent)}
+
+    .footer{margin:24px 0 40px; color:var(--muted); font-size:12px;}
+
+    /* Search Results */
+    .results {
+      margin-top:20px;
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+      gap:14px;
+    }
+    .movie {
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      cursor:pointer;
+      transition:transform .2s;
+    }
+    .movie:hover{transform:scale(1.05)}
+    .movie img{width:100%; display:block}
+    .movie-title{padding:8px; font-size:13px; font-weight:600; color:var(--text); text-align:center}
+
+    /* Modal */
+    dialog{border:1px solid var(--border); background:var(--panel); color:var(--text); border-radius:16px; padding:0; width:min(720px,94vw)}
+    .modal-header{display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border)}
+    .modal-title{font-weight:800}
+    .modal-body{padding:16px}
+    .modal-body ol{margin:0; padding-left:18px}
+    .close-x{all:unset; cursor:pointer; padding:6px 8px; border-radius:10px}
+    .close-x:hover{background:var(--panel-2)}
+
+    /* Small screens */
+    @media (max-width: 860px){
+      .sidebar{position:static; width:auto; height:auto; flex-direction:row; justify-content:space-between}
+      .main{margin-left:0}
+      .brand{display:none}
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🎬 Movie Player</h1>
-  </header>
-
-  <div class="searchbar">
-    <input id="query" placeholder="Search for a movie..."/>
-    <button onclick="searchMovies()">Search</button>
-  </div>
-
-  <div id="results" class="movie-grid"></div>
-
-  <div id="player" class="player">
-    <div class="frame-wrap">
-      <iframe id="movieFrame" allowfullscreen></iframe>
-    </div>
-  </div>
-
-  <script>
-    const API_KEY = "YOUR_TMDB_API_KEY"; // 🔑 replace with your TMDB key
-    const PROXY = "https://your-proxy.com/embed?url="; // 🔗 your deployed VidSrc-NoAds proxy
-
-    async function searchMovies() {
-      const q = document.getElementById("query").value;
-      if (!q) return;
-      const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      renderResults(data.results);
-    }
-
-    function renderResults(movies) {
-      const grid = document.getElementById("results");
-      grid.innerHTML = "";
-      movies.forEach(m => {
-        const card = document.createElement("div");
-        card.className = "movie-card";
-        card.innerHTML = `
-          <img src="https://image.tmdb.org/t/p/w300${m.poster_path}" alt="${m.title}">
-          <div class="meta">
-            <div class="title">${m.title}</div>
-            <div>${m.release_date?.slice(0,4) || ""}</div>
-          </div>
-        `;
-        card.onclick = () => playMovie(m.id);
-        grid.appendChild(card);
-      });
-    }
-
-    async function playMovie(tmdbId) {
-      try {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/external_ids?api_key=${API_KEY}`);
-        const ids = await res.json();
-        const imdb = ids.imdb_id;
-        if (!imdb) return alert("No IMDb ID found.");
-        const embedUrl = `https://vidsrc.dev/embed/movie/${imdb}`;
-        const proxyUrl = `${PROXY}${encodeURIComponent(embedUrl)}`;
-        // try proxy first
-        document.getElementById("movieFrame").src = proxyUrl;
-        document.getElementById("player").style.display = "block";
-        // fallback check after 5s
-        setTimeout(() => {
-          if (!document.getElementById("movieFrame").contentWindow) {
-            document.getElementById("movieFrame").src = embedUrl;
-          }
-        }, 5000);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  </script>
-</body>
-</html>
+  <!-- Sidebar -->
   <div class="sidebar">
-    <div class="brand">MOVIES</div>
+    <h2>Movie<br>Player</h2>
+    <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
+    <button class="navbtn" id="openHelp">Ad-block</button>
+    <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
+    <button class="navbtn" id="openAbout">About</button>
   </div>
-  <div class="main">
-    <div class="header">
-      <h1>Movie Player</h1>
-    </div>
-    <div class="wrap">
-      <div class="searchbar">
-        <input id="searchInput" placeholder="Search for movies...">
-        <button onclick="searchMovies()">Search</button>
+
+  <main class="main">
+    <header class="header">
+      <h1>Free Movies</h1>
+      <p>Search or paste an IMDb ID (e.g., <code>tt11083552</code>), pick a server, then hit Watch.</p>
+    </header>
+
+    <section class="wrap">
+      <div class="toolbar" role="group" aria-label="Controls">
+        <input id="imdbInput" class="input" placeholder="Enter IMDb link, ID, or movie name" autocomplete="off" />
+        <select id="serverSelect" class="select" aria-label="Server">
+          <option value="vidsrc">Server 1 – Vidsrc.me</option>
+          <option value="vidsrcto">Server 2 – Vidsrc.to</option>
+          <option value="2embed">Server 3 – 2Embed</option>
+        </select>
+        <button id="watchBtn" class="btn primary" type="button">▶ Watch</button>
+        <button id="copyBtn" class="btn" type="button" title="Copy share link">🔗 Copy Link</button>
+        <button id="openTabBtn" class="btn ghost" type="button" title="Open player in new tab">⧉ New Tab</button>
       </div>
-      <div id="movies" class="movie-grid"></div>
-      <div id="player" class="player" style="display:none;">
+
+      <div id="results" class="results"></div>
+
+      <div class="player" aria-live="polite">
         <div class="frame-wrap">
-          <iframe id="movieFrame" allowfullscreen></iframe>
+          <iframe id="movieFrame" allow="fullscreen; picture-in-picture; clipboard-write" referrerpolicy="no-referrer" src=""></iframe>
         </div>
       </div>
-    </div>
-  </div>
 
-<script>
-const API_KEY = "YOUR_TMDB_API_KEY";
-const servers = [
-  "https://vidsrc.dev/embed/movie/",
-  "https://vidsrc.to/embed/movie/",
-  "https://vidsrc.me/embed/movie/"
-];
+      <div class="status" id="status">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="statusText">Ready. Tip: Press <kbd>Enter</kbd> to search or watch.</span>
+      </div>
 
-async function searchMovies() {
-  const q = document.getElementById("searchInput").value.trim();
-  if (!q) return;
-  const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(q)}`);
-  const data = await res.json();
-  const grid = document.getElementById("movies");
-  grid.innerHTML = "";
-  data.results.forEach(m => {
-    const card = document.createElement("div");
-    card.className = "movie-card";
-    card.innerHTML = `
-      <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" alt="">
-      <div class="meta">
-        <div class="title">${m.title}</div>
-        <div>${m.release_date?.split("-")[0] || ""}</div>
-      </div>`;
-    card.onclick = () => playMovie(m.id);
-    grid.appendChild(card);
-  });
-}
-
-async function playMovie(tmdbId) {
-  const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/external_ids?api_key=${API_KEY}`);
-  const data = await res.json();
-  const imdbId = data.imdb_id;
-  if (!imdbId) return alert("No IMDb ID available.");
-  document.getElementById("player").style.display = "block";
-  tryNextServer(imdbId, 0);
-}
-
-function tryNextServer(imdbId, i) {
-  if (i >= servers.length) {
-    document.getElementById("movieFrame").src = "";
-    alert("All servers failed 😢");
-    return;
-  }
-  const url = servers[i] + imdbId;
-  const frame = document.getElementById("movieFrame");
-  frame.src = url;
-  frame.onerror = () => tryNextServer(imdbId, i+1);
-}
-</script>
-</body>
-</html>
-    .searchbar input {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: none;
-      width: 220px;
-    }
-
-    .searchbar button {
-      background: #e50914;
-      border: none;
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .searchbar button:hover {
-      background: #f40612;
-    }
-
-    main {
-      padding: 20px;
-    }
-
-    .movie-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-    }
-
-    .movie-card {
-      background: #1c1c1c;
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .movie-card:hover {
-      transform: scale(1.05);
-    }
-
-    .movie-card img {
-      width: 100%;
-      height: 240px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .movie-card .meta {
-      padding: 10px;
-    }
-
-    .movie-card .title {
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .movie-card .year {
-      font-size: 12px;
-      color: #aaa;
-    }
-
-    .player {
-      margin-top: 30px;
-      background: #000;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .player iframe {
-      width: 100%;
-      height: 480px;
-      border: 0;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>MovieApp</h1>
-    <div class="searchbar">
-      <input id="searchInput" type="text" placeholder="Search for a movie...">
-      <button onclick="searchMovies()">Search</button>
-    </div>
-  </header>
-
-  <main>
-    <h2 id="sectionTitle">Popular Movies</h2>
-    <div id="results" class="movie-grid"></div>
-
-    <div id="player" class="player" style="display:none;">
-      <iframe id="movieFrame" allowfullscreen></iframe>
-    </div>
+      <div class="footer">
+        <p><strong>Heads-up:</strong> Only embed content you have the rights to watch. Some third-party players show ads; see <em>Ad-block Help</em> for tips. If a server fails, try a different one.</p>
+      </div>
+    </section>
   </main>
 
-  <script>
-    const API_KEY = "6452370c23b5a8497b9a201cf46fba42";
-    const IMG_BASE = "https://image.tmdb.org/t/p/w500";
+  <!-- Ad-block Help Modal -->
+  <dialog id="helpModal">
+    <div class="modal-header">
+      <div class="modal-title">Watch with fewer ads using uBlock Origin Lite</div>
+      <button class="close-x" id="helpClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>These steps are for Chromium-based browsers (Chrome, Edge, Brave, etc.). For Firefox, install the classic <em>uBlock Origin</em> add-on.</p>
+      <ol>
+        <li>Install <strong>uBlock Origin Lite</strong> from the Chrome Web Store.</li>
+        <li>Pin it and make sure blocking is <strong>On</strong> for this site.</li>
+        <li>Reload. Most popups/banners should be gone.</li>
+      </ol>
+    </div>
+  </dialog>
 
-    async function fetchPopular() {
-      const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`);
-      const data = await res.json();
-      renderMovies(data.results);
-    }
+  <!-- About Modal -->
+  <dialog id="aboutModal">
+    <div class="modal-header">
+      <div class="modal-title">About this page</div>
+      <button class="close-x" id="aboutClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Search by movie title or paste IMDb ID. Click a movie card to load instantly in the player.</p>
+    </div>
+  </dialog>
 
-    async function searchMovies() {
-      const query = document.getElementById("searchInput").value;
-      if (!query) return;
-      const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      document.getElementById("sectionTitle").innerText = "Search Results";
-      renderMovies(data.results);
-    }
+<script>
+const $ = sel => document.querySelector(sel);
+const input = $('#imdbInput');
+const select = $('#serverSelect');
+const frame = $('#movieFrame');
+const statusText = $('#statusText');
+const resultsDiv = $('#results');
 
-    function renderMovies(movies) {
-      const results = document.getElementById("results");
-      results.innerHTML = "";
-      movies.forEach(movie => {
-        const card = document.createElement("div");
-        card.className = "movie-card";
-        card.innerHTML = `
-          <img src="${movie.poster_path ? IMG_BASE + movie.poster_path : ''}" alt="">
-          <div class="meta">
-            <div class="title">${movie.title}</div>
-            <div class="year">${movie.release_date ? movie.release_date.split("-")[0] : ""}</div>
-          </div>`;
-        card.onclick = () => playMovie(movie.id);
-        results.appendChild(card);
-      });
-    }
+const API_KEY = "6452370c23b5a8497b9a201cf46fba42";
+const TMDB_SEARCH = "https://api.themoviedb.org/3/search/movie?api_key="+API_KEY+"&query=";
+const TMDB_DETAILS = id => `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}`;
 
-    async function playMovie(tmdbId) {
-      const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/external_ids?api_key=${API_KEY}`);
-      const data = await res.json();
-      const imdbId = data.imdb_id;
-      if (!imdbId) {
-        alert("No IMDb link available for this movie.");
-        return;
+const extractIMDb = (str='') => {
+  const m = String(str).match(/tt\d{7,8}/i);
+  return m ? m[0] : '';
+};
+
+const buildURL = (server, imdbID) => {
+  switch(server){
+    case 'vidsrc':
+      return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
+    case 'vidsrcto':
+      return `https://vidsrc.to/embed/movie/${imdbID}`;
+    case '2embed':
+      return `https://www.2embed.cc/embed/${imdbID}`;
+    default:
+      return '';
+  }
+};
+
+const setStatus = (msg) => statusText.textContent = msg;
+
+function loadFromFields(imdbIDOverride){
+  const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
+  if(!imdbID){ alert('Please enter a valid IMDb ID.'); return; }
+  const embedURL = buildURL(select.value, imdbID);
+  if(!embedURL){ alert('Unknown server selected.'); return; }
+  frame.src = embedURL;
+  setStatus(`Loaded ${imdbID} on ${select.options[select.selectedIndex].text}.`);
+}
+
+$('#watchBtn').addEventListener('click', ()=> loadFromFields());
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && document.activeElement===input){
+    e.preventDefault();
+    if(extractIMDb(input.value.trim())) loadFromFields();
+    else searchTMDB(input.value.trim());
+  }
+});
+
+async function searchTMDB(query){
+  if(!query) return;
+  setStatus("Searching…");
+  const res = await fetch(TMDB_SEARCH+encodeURIComponent(query));
+  const data = await res.json();
+  resultsDiv.innerHTML="";
+  if(!data.results || !data.results.length){
+    setStatus("No results.");
+    return;
+  }
+  data.results.forEach(m=>{
+    if(!m.poster_path) return;
+    const div=document.createElement("div");
+    div.className="movie";
+    div.innerHTML=`<img src="https://image.tmdb.org/t/p/w342${m.poster_path}"><div class="movie-title">${m.title}</div>`;
+    div.onclick= async ()=>{
+      const detRes=await fetch(TMDB_DETAILS(m.id));
+      const det=await detRes.json();
+      if(det.imdb_id){
+        input.value=det.imdb_id;
+        loadFromFields(det.imdb_id);
+        resultsDiv.innerHTML="";
+      }else{
+        setStatus("No IMDb ID found for this movie.");
       }
-      document.getElementById("player").style.display = "block";
-      document.getElementById("movieFrame").src = `https://vidsrc.dev/embed/movie/${imdbId}`;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // Load popular movies on first load
-    fetchPopular();
-  </script>
+    };
+    resultsDiv.appendChild(div);
+  });
+  setStatus("Click a movie to watch.");
+}
+</script>
 </body>
 </html>
