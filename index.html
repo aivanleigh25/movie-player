@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Movie Player</title>
-  <meta name="color-scheme" content="dark light"/>
   <style>
-    /*  your exact long-themed CSS */
     :root{--bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040}
     *{box-sizing:border-box} html,body{height:100%}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
@@ -13,8 +12,6 @@
     .sidebar{position:fixed;inset:0 auto 0 0;width:120px;background:var(--panel);border-right:1px solid var(--border);
       display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 10px;}
     .brand{font-weight:800;font-size:14px;color:var(--brand);text-transform:uppercase}
-    .navlink{color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 10px;border-radius:10px;transition:.2s}
-    .navlink:hover{color:var(--text);background:var(--panel-2)}
     .navbtn{all:unset;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;padding:8px 10px;border-radius:10px;text-align:center;transition:.2s}
     .navbtn:hover{color:var(--text);background:var(--panel-2)}
     .main{margin-left:140px;flex:1;display:flex;flex-direction:column;}
@@ -39,20 +36,66 @@
   </style>
 </head>
 <body>
-  <!-- sidebar -->
   <div class="sidebar">
-    <h2>Movie<br>Player</h2>
-    <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
-    <button class="navbtn" id="openHelp">Ad-block</button>
-    <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
-    <button class="navbtn" id="openAbout">About</button>
+    <div class="brand">Movies</div>
+    <button class="navbtn" onclick="alert('Adblock tutorial: Use uBlock Origin or Brave browser to block ads.')">AdBlock Help</button>
+    <button class="navbtn" onclick="window.open('https://www.imdb.com','_blank')">IMDb</button>
+  </div>
+  <div class="main">
+    <div class="header">
+      <h1>Movie Player</h1>
+      <p>Search movies and watch instantly (ad-free with vidsrc.dev)</p>
+    </div>
+    <div class="wrap">
+      <div class="searchbar">
+        <input type="text" id="searchInput" placeholder="Search for movies...">
+        <button onclick="searchMovies()">Search</button>
+      </div>
+      <div id="results" class="movie-grid"></div>
+      <div id="player" class="player" style="display:none;">
+        <div class="frame-wrap">
+          <iframe id="movieFrame" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <main class="main">
-    <header class="header">
-      <h1>Free Movies</h1>
-      <p>Search or paste IMDb ID to play instantly via <strong>vidsrc.dev</strong></p>
-    </header>
+<script>
+  const API_KEY = "6452370c23b5a8497b9a201cf46fba42";
+  const IMG_BASE = "https://image.tmdb.org/t/p/w500";
+
+  async function searchMovies() {
+    const query = document.getElementById("searchInput").value;
+    const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    const results = document.getElementById("results");
+    results.innerHTML = "";
+    if (data.results.length === 0) {
+      results.innerHTML = "<p class='empty-hint'>No movies found.</p>";
+      return;
+    }
+    data.results.forEach(movie => {
+      const card = document.createElement("div");
+      card.className = "movie-card";
+      card.innerHTML = `
+        <img src="${movie.poster_path ? IMG_BASE + movie.poster_path : ''}" alt="">
+        <div class="meta">
+          <div class="title">${movie.title}</div>
+          <div>${movie.release_date ? movie.release_date.split("-")[0] : ""}</div>
+        </div>`;
+      card.onclick = () => playMovie(movie.id);
+      results.appendChild(card);
+    });
+  }
+
+  function playMovie(id) {
+    document.getElementById("player").style.display = "block";
+    document.getElementById("movieFrame").src = `https://vidsrc.dev/embed/movie/${id}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
 
     <section class="wrap">
       <!-- search area -->
