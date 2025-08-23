@@ -1,39 +1,115 @@
-<script>
-  const API_KEY = "6452370c23b5a8497b9a201cf46fba42";
-  const IMG_BASE = "https://image.tmdb.org/t/p/w500";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Player</title>
+  <style>
+    :root{--bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:linear-gradient(120deg,var(--bg),#0b0d12 60%);display:flex;min-height:100vh;}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:120px;background:var(--panel);border-right:1px solid var(--border);
+      display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 10px;}
+    .brand{font-weight:800;font-size:14px;color:var(--brand);text-transform:uppercase}
+    .navlink{color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 10px;border-radius:10px;transition:.2s}
+    .navlink:hover{color:var(--text);background:var(--panel-2)}
+    .navbtn{all:unset;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;padding:8px 10px;border-radius:10px;text-align:center;transition:.2s}
+    .navbtn:hover{color:var(--text);background:var(--panel-2)}
+    .main{margin-left:140px;flex:1;display:flex;flex-direction:column;}
+    .header{padding:22px 20px;background:var(--panel);border-bottom:1px solid var(--border);}
+    .header h1{margin:0;font-size:24px}
+    .header p{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .wrap{max-width:1000px;width:100%;margin:22px auto;padding:0 16px}
+    .searchbar{margin:16px 0 8px;display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:10px;}
+    .searchbar input{flex:1;min-width:200px;background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;}
+    .searchbar button{background:var(--accent);color:#06151a;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .searchbar button:hover{filter:brightness(1.05)}
+    .movie-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:12px;}
+    .movie-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;}
+    .movie-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+    .movie-card img{width:100%;height:210px;object-fit:cover;}
+    .movie-card .meta{padding:8px;font-size:12px;color:var(--muted)}
+    .movie-card .title{color:var(--text);font-weight:700;font-size:13px;margin:0 0 4px}
+    .empty-hint{color:var(--muted);font-size:13px;margin-top:8px}
+    .player{margin-top:16px;background:#000;border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+    .player .frame-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+    iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="brand">MovieApp</div>
+    <a href="#" class="navlink">Home</a>
+  </div>
 
-  async function searchMovies() {
-    const query = document.getElementById("searchInput").value;
-    const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    const results = document.getElementById("results");
-    results.innerHTML = "";
-    if (data.results.length === 0) {
-      results.innerHTML = "<p class='empty-hint'>No movies found.</p>";
-      return;
+  <div class="main">
+    <div class="header">
+      <h1>Movie Player</h1>
+      <p>Search and play movies instantly</p>
+    </div>
+
+    <div class="wrap">
+      <div class="searchbar">
+        <input id="searchInput" type="text" placeholder="Search for a movie...">
+        <button onclick="searchMovies()">Search</button>
+      </div>
+
+      <div id="results" class="movie-grid"></div>
+
+      <div id="player" class="player" style="display:none;">
+        <div class="frame-wrap">
+          <iframe id="movieFrame" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "6452370c23b5a8497b9a201cf46fba42";
+    const IMG_BASE = "https://image.tmdb.org/t/p/w500";
+
+    async function searchMovies() {
+      const query = document.getElementById("searchInput").value;
+      const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      const results = document.getElementById("results");
+      results.innerHTML = "";
+      if (data.results.length === 0) {
+        results.innerHTML = "<p class='empty-hint'>No movies found.</p>";
+        return;
+      }
+      data.results.forEach(movie => {
+        const card = document.createElement("div");
+        card.className = "movie-card";
+        card.innerHTML = `
+          <img src="${movie.poster_path ? IMG_BASE + movie.poster_path : ''}" alt="">
+          <div class="meta">
+            <div class="title">${movie.title}</div>
+            <div>${movie.release_date ? movie.release_date.split("-")[0] : ""}</div>
+          </div>`;
+        card.onclick = () => playMovie(movie.id);
+        results.appendChild(card);
+      });
     }
-    data.results.forEach(movie => {
-      const card = document.createElement("div");
-      card.className = "movie-card";
-      card.innerHTML = `
-        <img src="${movie.poster_path ? IMG_BASE + movie.poster_path : ''}" alt="">
-        <div class="meta">
-          <div class="title">${movie.title}</div>
-          <div>${movie.release_date ? movie.release_date.split("-")[0] : ""}</div>
-        </div>`;
-      card.onclick = () => playMovie(movie.id);
-      results.appendChild(card);
-    });
-  }
 
-  async function playMovie(tmdbId) {
-    // get external IDs from TMDB to retrieve IMDb ID
-    const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/external_ids?api_key=${API_KEY}`);
-    const data = await res.json();
-    const imdbId = data.imdb_id;
+    async function playMovie(tmdbId) {
+      const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/external_ids?api_key=${API_KEY}`);
+      const data = await res.json();
+      const imdbId = data.imdb_id;
 
-    if (!imdbId) {
-      alert("No IMDb link available for this movie.");
+      if (!imdbId) {
+        alert("No IMDb link available for this movie.");
+        return;
+      }
+
+      document.getElementById("player").style.display = "block";
+      document.getElementById("movieFrame").src = `https://vidsrc.dev/embed/movie/${imdbId}`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
       return;
     }
 
