@@ -6,34 +6,161 @@
   <title>Movie Player</title>
   <meta name="color-scheme" content="dark light"/>
   <style>
-    :root{
-      --bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
-      background:linear-gradient(120deg,var(--bg),#0b0d12 60%);
-      display:flex; min-height:100vh;
-    }
-
-    /* Sidebar */
-    .sidebar{
-      position:fixed; inset:0 auto 0 0; width:120px; background:var(--panel);
-      border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;
-    }
-    .brand{font-weight:800; letter-spacing:.5px; font-size:14px; color:var(--brand); text-transform:uppercase}
-    .navlink{color:var(--muted); text-decoration:none; font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; transition:all .2s ease}
+    /* --- your existing CSS unchanged --- */
+    :root{--bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
+      background:linear-gradient(120deg,var(--bg),#0b0d12 60%); display:flex; min-height:100vh;}
+    .sidebar{position:fixed; inset:0 auto 0 0; width:120px; background:var(--panel);
+      border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;}
+    .brand{font-weight:800; font-size:14px; color:var(--brand); text-transform:uppercase}
+    .navlink{color:var(--muted); text-decoration:none; font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; transition:.2s}
     .navlink:hover{color:var(--text); background:var(--panel-2)}
-    .navbtn{
-      all:unset; cursor:pointer; color:var(--muted); font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; text-align:center; transition:all .2s ease;
-    }
+    .navbtn{all:unset; cursor:pointer; color:var(--muted); font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; text-align:center; transition:.2s}
     .navbtn:hover{color:var(--text); background:var(--panel-2)}
-
-    /* Main */
     .main{margin-left:140px; flex:1; display:flex; flex-direction:column;}
     .header{padding:22px 20px; background:var(--panel); border-bottom:1px solid var(--border);}
     .header h1{margin:0; font-size:24px}
+    .header p{margin:6px 0 0; color:var(--muted); font-size:13px}
+    .wrap{max-width:1000px; width:100%; margin:22px auto; padding:0 16px}
+    .searchbar{margin:16px 0 8px; display:flex; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--border);
+      border-radius:14px; padding:10px;}
+    .searchbar input{flex:1; min-width:200px; background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:10px 12px;}
+    .searchbar button{background:var(--accent); color:#06151a; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
+    .movie-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:14px; margin-top:12px;}
+    .movie-card{background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer;
+      transition:transform .18s, box-shadow .18s}
+    .movie-card:hover{transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.35)}
+    .movie-card img{width:100%; height:210px; object-fit:cover;}
+    .movie-card .meta{padding:8px; font-size:12px; color:var(--muted)}
+    .movie-card .title{color:var(--text); font-weight:700; font-size:13px; margin:0 0 4px}
+    .player{margin-top:16px; background:#000; border:1px solid var(--border); border-radius:18px; overflow:hidden;}
+    .player .frame-wrap{position:relative; width:100%; aspect-ratio:16/9; background:#000}
+    iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Movie<br>Player</h2>
+    <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
+    <button class="navbtn" id="openHelp">Ad-block</button>
+    <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
+    <button class="navbtn" id="openAbout">About</button>
+  </div>
+
+  <main class="main">
+    <header class="header">
+      <h1>Free Movies</h1>
+      <p>Search or paste IMDb ID and watch instantly via <strong>vidsrc.dev</strong>.</p>
+    </header>
+
+    <section class="wrap">
+      <!-- Search -->
+      <div class="searchbar">
+        <input id="searchInput" placeholder="Search movies by title…" />
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+      <div id="results" class="movie-grid"></div>
+      <div id="resultsHint" class="empty-hint">Tip: search for a title, then click a poster to play.</div>
+
+      <!-- Player -->
+      <div class="player">
+        <div class="frame-wrap">
+          <iframe id="movieFrame" allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const TMDB_KEY = "6452370c23b5a8497b9a201cf46fba42";
+    const frame = document.getElementById("movieFrame");
+    const results = document.getElementById("results");
+    const resultsHint = document.getElementById("resultsHint");
+    const imgBase = "https://image.tmdb.org/t/p/w342";
+
+    // 🔹 Always use vidsrc.dev
+    const buildURL = imdbID => `https://vidsrc.dev/embed/movie/${imdbID}`;
+
+    async function searchMovies() {
+      const q = document.getElementById("searchInput").value.trim();
+      if (!q) return;
+      resultsHint.textContent = "Searching…";
+      results.innerHTML = "";
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (!data.results?.length) {
+          resultsHint.textContent = "No results.";
+          return;
+        }
+        resultsHint.textContent = "Click a poster to play.";
+        data.results.forEach(m => {
+          const card = document.createElement("div");
+          card.className = "movie-card";
+          card.innerHTML = `
+            <img src="${m.poster_path ? imgBase+m.poster_path : 'https://via.placeholder.com/342x513?text=No+Image'}" alt="${m.title}">
+            <div class="meta">
+              <div class="title">${m.title}</div>
+              <div>${(m.release_date||"").slice(0,4) || "N/A"}</div>
+            </div>
+          `;
+          card.addEventListener("click", ()=> loadMovieByTMDb(m.id));
+          results.appendChild(card);
+        });
+      } catch (e) {
+        resultsHint.textContent = "Search failed.";
+        console.error(e);
+      }
+    }
+
+    async function loadMovieByTMDb(tmdbId) {
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_KEY}&append_to_response=external_ids`);
+        const data = await res.json();
+        const imdbID = data?.external_ids?.imdb_id;
+        if (!imdbID) {
+          alert("IMDb ID not found.");
+          return;
+        }
+        frame.src = buildURL(imdbID);
+        window.scrollTo({top:0, behavior:"smooth"});
+      } catch (e) {
+        alert("Could not load movie.");
+      }
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", searchMovies);
+    document.getElementById("searchInput").addEventListener("keydown", e=>{
+      if (e.key==="Enter") searchMovies();
+    });
+
+    // 🔹 Auto-load trending on homepage
+    (async function loadTrending(){
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_KEY}`);
+        const data = await res.json();
+        results.innerHTML = "";
+        resultsHint.textContent = "Trending now";
+        data.results.slice(0,12).forEach(m=>{
+          const card = document.createElement("div");
+          card.className = "movie-card";
+          card.innerHTML = `
+            <img src="${m.poster_path ? imgBase+m.poster_path : 'https://via.placeholder.com/342x513?text=No+Image'}" alt="${m.title}">
+            <div class="meta">
+              <div class="title">${m.title}</div>
+              <div>${(m.release_date||"").slice(0,4) || "N/A"}</div>
+            </div>
+          `;
+          card.addEventListener("click", ()=> loadMovieByTMDb(m.id));
+          results.appendChild(card);
+        });
+      } catch (e) { console.error(e); }
+    })();
+  </script>
+</body>
+</html>
     .header p{margin:6px 0 0; color:var(--muted); font-size:13px}
 
     .wrap{max-width:1000px; width:100%; margin:22px auto; padding:0 16px}
