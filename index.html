@@ -1,39 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Movie Player</title>
-  <meta name="color-scheme" content="dark light"/>
+  <meta charset="UTF-8">
+  <title>Movie Embed Site</title>
   <style>
-    :root{
-      --bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
-      background:linear-gradient(120deg,var(--bg),#0b0d12 60%);
-      display:flex; min-height:100vh;
+    .sidebar {
+      width: 200px;
+      background: #222;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sidebar button {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .sidebar button:hover {
+      background: #666;
+    }
+    .content {
+      flex: 1;
+      padding: 20px;
+    }
+    iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+      border-radius: 10px;
+    }
+    /* Search Section */
+    .search-box {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    .search-box button {
+      padding: 10px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .movie-card {
+      background: #222;
+      border-radius: 10px;
+      overflow: hidden;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .movie-card:hover {
+      transform: scale(1.05);
+    }
+    .movie-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+    .movie-card p {
+      margin: 10px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <button onclick="showAdblockInfo()">🚫 Ad Block</button>
+    <button onclick="openIMDb()">🎬 IMDb</button>
+  </div>
+
+  <div class="content">
+    <h1>🎥 Movie Player</h1>
+
+    <!-- Search Movies -->
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search movies...">
+      <button onclick="searchMovies()">Search</button>
+    </div>
+    <div id="results" class="movie-grid"></div>
+
+    <!-- Movie Player -->
+    <select id="serverSelect" onchange="reloadMovie()">
+      <option value="vidsrc">VidSrc</option>
+      <option value="vidsrcto">VidSrc.to</option>
+      <option value="2embed">2Embed</option>
+    </select>
+    <iframe id="movieFrame" src=""></iframe>
+  </div>
+
+  <script>
+    const TMDB_KEY = "6452370c23b5a8497b9a201cf46fba42";
+
+    function showAdblockInfo() {
+      alert("To watch movies without ads:\n\n1. Install uBlock Origin or AdGuard.\n2. Enable it on this site.\n3. Reload the page and enjoy clean playback!");
     }
 
-    /* Sidebar */
-    .sidebar{
-      position:fixed; inset:0 auto 0 0; width:120px; background:var(--panel);
-      border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;
+    function openIMDb() {
+      window.open("https://www.imdb.com", "_blank");
     }
-    .brand{font-weight:800; letter-spacing:.5px; font-size:14px; color:var(--brand); text-transform:uppercase}
-    .navlink{color:var(--muted); text-decoration:none; font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; transition:all .2s ease}
-    .navlink:hover{color:var(--text); background:var(--panel-2)}
-.navbtn {
-  all: unset;
-  cursor: pointer;
-  color: var(--muted);
-  font-weight: 600;
-  font-size: 13px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  text-align: center;
+
+    // TMDb Search
+    async function searchMovies() {
+      let query = document.getElementById("searchInput").value.trim();
+      if (!query) return alert("Enter a movie name!");
+
+      let res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
+      let data = await res.json();
+
+      let results = document.getElementById("results");
+      results.innerHTML = "";
+
+      if (data.results && data.results.length > 0) {
+        data.results.forEach(movie => {
+          let poster = movie.poster_path 
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+            : "https://via.placeholder.com/150x220?text=No+Image";
+
+          let card = document.createElement("div");
+          card.className = "movie-card";
+          card.innerHTML = `
+            <img src="${poster}" alt="${movie.title}">
+            <p>${movie.title} (${movie.release_date ? movie.release_date.substring(0,4) : "N/A"})</p>
+          `;
+          card.onclick = () => loadMovieByTMDB(movie.id);
+          results.appendChild(card);
+        });
+      } else {
+        results.innerHTML = "<p>No results found.</p>";
+      }
+    }
+
+    // Load Movie by TMDB -> get IMDb ID -> load into iframe
+    async function loadMovieByTMDB(tmdbID) {
+      let res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbID}?api_key=${TMDB_KEY}&append_to_response=external_ids`);
+      let data = await res.json();
+      let imdbID = data.imdb_id;
+      if (imdbID) {
+        loadMovieByID(imdbID);
+      } else {
+        alert("No IMDb link found for this movie.");
+      }
+    }
+
+    function loadMovieByID(imdbID) {
+      let server = document.getElementById("serverSelect").value;
+      let embedURL = "";
+
+      if (server === "vidsrc") {
+        embedURL = "https://vidsrc.me/embed/movie?imdb=" + imdbID;
+      } else if (server === "vidsrcto") {
+        embedURL = "https://vidsrc.to/embed/movie/" + imdbID;
+      } else if (server === "2embed") {
+        embedURL = "https://www.2embed.cc/embed/" + imdbID;
+      }
+
+      document.getElementById("movieFrame").src = embedURL;
+    }
+
+    function reloadMovie() {
+      let currentSrc = document.getElementById("movieFrame").src;
+      if (currentSrc.includes("imdb=")) {
+        let imdbID = currentSrc.split("imdb=")[1];
+        loadMovieByID(imdbID);
+      }
+    }
+  </script>
+</body>
+</html>
   transition: all .2s ease;
 }
 .navbtn:hover {
