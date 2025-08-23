@@ -1,205 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Movie Embed Site</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Movie Player</title>
+  <meta name="color-scheme" content="dark light"/>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
+    :root{
+      --bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040;
     }
-    .sidebar {
-      width: 200px;
-      background: #222;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .sidebar button {
-      background: #444;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .sidebar button:hover {
-      background: #666;
-    }
-    .content {
-      flex: 1;
-      padding: 20px;
-    }
-    iframe {
-      width: 100%;
-      height: 500px;
-      border: none;
-      border-radius: 10px;
-    }
-    /* Search Section */
-    .search-box {
-      margin: 20px 0;
-      display: flex;
-      gap: 10px;
-    }
-    .search-box input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-    }
-    .search-box button {
-      padding: 10px;
-      background: #28a745;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .movie-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .movie-card {
-      background: #222;
-      border-radius: 10px;
-      overflow: hidden;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .movie-card:hover {
-      transform: scale(1.05);
-    }
-    .movie-card img {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-    }
-    .movie-card p {
-      margin: 10px 0;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <div class="sidebar">
-    <button onclick="showAdblockInfo()">🚫 Ad Block</button>
-    <button onclick="openIMDb()">🎬 IMDb</button>
-  </div>
-
-  <div class="content">
-    <h1>🎥 Movie Player</h1>
-
-    <!-- Search Movies -->
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Search movies...">
-      <button onclick="searchMovies()">Search</button>
-    </div>
-    <div id="results" class="movie-grid"></div>
-
-    <!-- Movie Player -->
-    <select id="serverSelect" onchange="reloadMovie()">
-      <option value="vidsrc">VidSrc</option>
-      <option value="vidsrcto">VidSrc.to</option>
-      <option value="2embed">2Embed</option>
-    </select>
-    <iframe id="movieFrame" src=""></iframe>
-  </div>
-
-  <script>
-    const TMDB_KEY = "6452370c23b5a8497b9a201cf46fba42";
-
-    function showAdblockInfo() {
-      alert("To watch movies without ads:\n\n1. Install uBlock Origin or AdGuard.\n2. Enable it on this site.\n3. Reload the page and enjoy clean playback!");
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
+      background:linear-gradient(120deg,var(--bg),#0b0d12 60%);
+      display:flex; min-height:100vh;
     }
 
-    function openIMDb() {
-      window.open("https://www.imdb.com", "_blank");
+    /* Sidebar */
+    .sidebar{
+      position:fixed; inset:0 auto 0 0; width:120px; background:var(--panel);
+      border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;
     }
-
-    // TMDb Search
-    async function searchMovies() {
-      let query = document.getElementById("searchInput").value.trim();
-      if (!query) return alert("Enter a movie name!");
-
-      let res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
-      let data = await res.json();
-
-      let results = document.getElementById("results");
-      results.innerHTML = "";
-
-      if (data.results && data.results.length > 0) {
-        data.results.forEach(movie => {
-          let poster = movie.poster_path 
-            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
-            : "https://via.placeholder.com/150x220?text=No+Image";
-
-          let card = document.createElement("div");
-          card.className = "movie-card";
-          card.innerHTML = `
-            <img src="${poster}" alt="${movie.title}">
-            <p>${movie.title} (${movie.release_date ? movie.release_date.substring(0,4) : "N/A"})</p>
-          `;
-          card.onclick = () => loadMovieByTMDB(movie.id);
-          results.appendChild(card);
-        });
-      } else {
-        results.innerHTML = "<p>No results found.</p>";
-      }
+    .brand{font-weight:800; letter-spacing:.5px; font-size:14px; color:var(--brand); text-transform:uppercase}
+    .navlink{color:var(--muted); text-decoration:none; font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; transition:all .2s ease}
+    .navlink:hover{color:var(--text); background:var(--panel-2)}
+    .navbtn{
+      all:unset; cursor:pointer; color:var(--muted); font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; text-align:center; transition:all .2s ease;
     }
-
-    // Load Movie by TMDB -> get IMDb ID -> load into iframe
-    async function loadMovieByTMDB(tmdbID) {
-      let res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbID}?api_key=${TMDB_KEY}&append_to_response=external_ids`);
-      let data = await res.json();
-      let imdbID = data.imdb_id;
-      if (imdbID) {
-        loadMovieByID(imdbID);
-      } else {
-        alert("No IMDb link found for this movie.");
-      }
-    }
-
-    function loadMovieByID(imdbID) {
-      let server = document.getElementById("serverSelect").value;
-      let embedURL = "";
-
-      if (server === "vidsrc") {
-        embedURL = "https://vidsrc.me/embed/movie?imdb=" + imdbID;
-      } else if (server === "vidsrcto") {
-        embedURL = "https://vidsrc.to/embed/movie/" + imdbID;
-      } else if (server === "2embed") {
-        embedURL = "https://www.2embed.cc/embed/" + imdbID;
-      }
-
-      document.getElementById("movieFrame").src = embedURL;
-    }
-
-    function reloadMovie() {
-      let currentSrc = document.getElementById("movieFrame").src;
-      if (currentSrc.includes("imdb=")) {
-        let imdbID = currentSrc.split("imdb=")[1];
-        loadMovieByID(imdbID);
-      }
-    }
-  </script>
-</body>
-</html>
-  transition: all .2s ease;
-}
-.navbtn:hover {
-  color: var(--text);
-  background: var(--panel-2);
-}
-
+    .navbtn:hover{color:var(--text); background:var(--panel-2)}
 
     /* Main */
     .main{margin-left:140px; flex:1; display:flex; flex-direction:column;}
@@ -235,6 +64,29 @@
     .close-x{all:unset; cursor:pointer; padding:6px 8px; border-radius:10px}
     .close-x:hover{background:var(--panel-2)}
 
+    /* --- Added: search UI (keeps your theme) --- */
+    .searchbar{
+      margin:16px 0 8px;
+      display:flex; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--border);
+      border-radius:14px; padding:10px;
+    }
+    .searchbar input{flex:1; min-width:200px; background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:10px 12px; outline:none}
+    .searchbar button{background:var(--accent); color:#06151a; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
+    .searchbar button:hover{filter:brightness(1.05)}
+
+    .movie-grid{
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:14px; margin-top:12px;
+    }
+    .movie-card{
+      background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .movie-card:hover{transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.35)}
+    .movie-card img{width:100%; height:210px; object-fit:cover; background:#000}
+    .movie-card .meta{padding:8px; font-size:12px; color:var(--muted)}
+    .movie-card .title{color:var(--text); font-weight:700; font-size:13px; margin:0 0 4px}
+    .empty-hint{color:var(--muted); font-size:13px; margin-top:8px}
+
     /* Small screens */
     @media (max-width: 860px){
       .sidebar{position:static; width:auto; height:auto; flex-direction:row; justify-content:space-between}
@@ -245,14 +97,13 @@
 </head>
 <body>
   <!-- Sidebar -->
-<div class="sidebar">
-  <h2>Movie<br>Player</h2>
-  <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
-  <button class="navbtn" id="openHelp">Ad-block</button>
-  <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
-  <button class="navbtn" id="openAbout">About</button>
-</div>
-
+  <div class="sidebar">
+    <h2>Movie<br>Player</h2>
+    <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
+    <button class="navbtn" id="openHelp">Ad-block</button>
+    <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
+    <button class="navbtn" id="openAbout">About</button>
+  </div>
 
   <main class="main">
     <header class="header">
@@ -261,6 +112,15 @@
     </header>
 
     <section class="wrap">
+      <!-- --- Added: 123movies-style search --- -->
+      <div class="searchbar" role="search">
+        <input id="searchInput" placeholder="Search movies by title…" autocomplete="off" />
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+      <div id="results" class="movie-grid" aria-live="polite"></div>
+      <div id="resultsHint" class="empty-hint">Tip: search for a title, then click a poster to play it here.</div>
+      <!-- --- End search section --- -->
+
       <div class="toolbar" role="group" aria-label="Controls">
         <input id="imdbInput" class="input" placeholder="Enter IMDb link or ID (e.g. tt11083552)" autocomplete="off" />
         <select id="serverSelect" class="select" aria-label="Server">
@@ -285,24 +145,24 @@
       </div>
 
       <div class="footer">
-        <p><strong>Heads‑up:</strong> Only embed content you have the rights to watch. Some third‑party players show ads; see <em>Ad‑block Help</em> for tips. If a server fails, try a different one.</p>
+        <p><strong>Heads-up:</strong> Only embed content you have the rights to watch. Some third-party players show ads; see <em>Ad-block Help</em> for tips. If a server fails, try a different one.</p>
       </div>
     </section>
   </main>
 
-  <!-- Ad‑block Help Modal -->
+  <!-- Ad-block Help Modal -->
   <dialog id="helpModal">
     <div class="modal-header">
       <div class="modal-title">Watch with fewer ads using uBlock Origin Lite</div>
       <button class="close-x" id="helpClose" aria-label="Close">✕</button>
     </div>
     <div class="modal-body">
-      <p>These steps are for Chromium‑based browsers (Chrome, Edge, Brave, etc.). For Firefox, install the classic <em>uBlock Origin</em> add‑on from Mozilla Add‑ons.</p>
+      <p>These steps are for Chromium-based browsers (Chrome, Edge, Brave, etc.). For Firefox, install the classic <em>uBlock Origin</em> add-on from Mozilla Add-ons.</p>
       <ol>
         <li>Open the Chrome Web Store page for <strong>uBlock Origin Lite</strong> and click <em>Add to Chrome</em>.</li>
-        <li>Pin the extension: click the puzzle‑piece icon in the toolbar → pin <em>uBlock Origin Lite</em>.</li>
+        <li>Pin the extension: click the puzzle-piece icon in the toolbar → pin <em>uBlock Origin Lite</em>.</li>
         <li>Go to a video page. Click the uBlock shield icon and ensure blocking is <strong>On</strong> for the site.</li>
-        <li>Reload the page. Most banner and pop‑up ads should be gone. If a site breaks, click the shield and toggle <em>Off</em> for that site to temporarily allow it.</li>
+        <li>Reload the page. Most banner and pop-up ads should be gone. If a site breaks, click the shield and toggle <em>Off</em> for that site to temporarily allow it.</li>
         <li>Optional: open the extension’s <em>Options</em> and enable any recommended filters. Keep your lists updated periodically.</li>
       </ol>
       <p style="margin-top:12px">Support creators by using legal sources whenever possible.</p>
@@ -321,133 +181,193 @@
   </dialog>
 
   <script>
-  const $ = sel => document.querySelector(sel);
-  const input = $('#imdbInput');
-  const select = $('#serverSelect');
-  const frame = $('#movieFrame');
-  const statusText = $('#statusText');
+    const $ = sel => document.querySelector(sel);
+    const input = $('#imdbInput');
+    const select = $('#serverSelect');
+    const frame = $('#movieFrame');
+    const statusText = $('#statusText');
 
-  const HELP_URL = 'https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh?hl=en';
+    const HELP_URL = 'https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh?hl=en';
+    const TMDB_KEY = '6452370c23b5a8497b9a201cf46fba42'; // your key
 
-  // Helpers
-  const extractIMDb = (str='') => {
-    const m = String(str).match(/tt\d{7,8}/i);
-    return m ? m[0] : '';
-  };
+    // Helpers
+    const extractIMDb = (str='') => {
+      const m = String(str).match(/tt\d{7,8}/i); // common IMDb ID lengths
+      return m ? m[0] : '';
+    };
+    const buildURL = (server, imdbID) => {
+      switch(server){
+        case 'vidsrc':   return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
+        case 'vidsrcto': return `https://vidsrc.to/embed/movie/${imdbID}`;
+        case '2embed':   return `https://www.2embed.cc/embed/${imdbID}`;
+        default:         return '';
+      }
+    };
+    const setStatus = (msg) => { statusText.textContent = msg; };
 
-  const buildURL = (server, imdbID) => {
-    switch(server){
-      case 'vidsrc':
-        return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
-      case 'vidsrcto':
-        return `https://vidsrc.to/embed/movie/${imdbID}`;
-      case '2embed':
-        return `https://www.2embed.cc/embed/${imdbID}`;
-      default:
-        return '';
+    const persist = () => {
+      const imdbID = extractIMDb(input.value.trim());
+      if(imdbID){
+        localStorage.setItem('lastIMDb', imdbID);
+        localStorage.setItem('lastServer', select.value);
+        const url = new URL(location.href);
+        url.searchParams.set('imdb', imdbID);
+        url.searchParams.set('server', select.value);
+        history.replaceState(null, '', url.toString());
+      }
+    };
+
+    function loadFromFields(){
+      const imdbID = extractIMDb(input.value.trim());
+      if(!imdbID){
+        alert('Please enter a valid IMDb link or ID (e.g., tt11083552).');
+        input.focus();
+        return;
+      }
+      const embedURL = buildURL(select.value, imdbID);
+      if(!embedURL){
+        alert('Unknown server selected.');
+        return;
+      }
+      frame.src = embedURL;
+      setStatus(`Loaded ${imdbID} on ${select.options[select.selectedIndex].text}.`);
+      persist();
     }
-  };
 
-  const setStatus = (msg) => statusText.textContent = msg;
-
-  const persist = () => {
-    const imdbID = extractIMDb(input.value.trim());
-    if(imdbID){
-      localStorage.setItem('lastIMDb', imdbID);
-      localStorage.setItem('lastServer', select.value);
+    // Buttons
+    $('#watchBtn').addEventListener('click', loadFromFields);
+    $('#copyBtn').addEventListener('click', ()=>{
+      const imdbID = extractIMDb(input.value.trim());
+      if(!imdbID){ alert('Enter a valid IMDb ID first.'); return; }
       const url = new URL(location.href);
       url.searchParams.set('imdb', imdbID);
       url.searchParams.set('server', select.value);
-      history.replaceState(null, '', url.toString());
+      navigator.clipboard.writeText(url.toString()).then(()=> setStatus('Sharable link copied to clipboard.'));
+    });
+    $('#openTabBtn').addEventListener('click', ()=>{
+      const imdbID = extractIMDb(input.value.trim());
+      if(!imdbID){ alert('Enter a valid IMDb ID first.'); return; }
+      const u = buildURL(select.value, imdbID);
+      window.open(u, '_blank', 'noopener');
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && document.activeElement === input){
+        e.preventDefault();
+        loadFromFields();
+      }
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='l'){
+        input.focus(); input.select();
+      }
+    });
+
+    // Startup
+    (function init(){
+      const params = new URLSearchParams(location.search);
+      const fromUrlID = extractIMDb(params.get('imdb')||'');
+      const fromUrlServer = params.get('server');
+      const lastIMDb = localStorage.getItem('lastIMDb');
+      const lastServer = localStorage.getItem('lastServer');
+
+      if(fromUrlID){ input.value = fromUrlID; }
+      else if(lastIMDb){ input.value = lastIMDb; }
+
+      if(fromUrlServer){ select.value = fromUrlServer; }
+      else if(lastServer){ select.value = lastServer; }
+
+      const idToLoad = extractIMDb(input.value.trim());
+      if(idToLoad){ frame.src = buildURL(select.value, idToLoad); }
+    })();
+
+    /* ---------- Modals ---------- */
+    const helpModal = document.getElementById('helpModal');
+    const aboutModal = document.getElementById('aboutModal');
+    document.getElementById('openHelp').addEventListener('click', () => {
+      const body = helpModal.querySelector('.modal-body');
+      if (!body.querySelector('.ublock-link')) {
+        const link = document.createElement('a');
+        link.href = HELP_URL;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.className = 'ublock-link';
+        link.textContent = '👉 Install uBlock Origin Lite (Chrome Web Store)';
+        link.style.display = 'inline-block';
+        link.style.marginTop = '14px';
+        link.style.color = '#7c9cff';
+        body.appendChild(link);
+      }
+      helpModal.showModal();
+    });
+    document.getElementById('helpClose').addEventListener('click', () => helpModal.close());
+    document.getElementById('openAbout').addEventListener('click', () => aboutModal.showModal());
+    document.getElementById('aboutClose').addEventListener('click', () => aboutModal.close());
+
+    /* ---------- Added: TMDb search + poster grid ---------- */
+    const results = document.getElementById('results');
+    const resultsHint = document.getElementById('resultsHint');
+    const imgBase = 'https://image.tmdb.org/t/p/w342';
+
+    async function searchMovies(){
+      const q = document.getElementById('searchInput').value.trim();
+      if(!q){ results.innerHTML=''; resultsHint.textContent='Type a title to search.'; return; }
+
+      resultsHint.textContent = 'Searching…';
+      try{
+        const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&include_adult=false`);
+        const data = await res.json();
+        results.innerHTML = '';
+        if(!data.results || !data.results.length){
+          resultsHint.textContent = 'No results. Try another title.';
+          return;
+        }
+        resultsHint.textContent = 'Click a poster to play.';
+        for(const m of data.results){
+          const poster = m.poster_path ? (imgBase + m.poster_path) : 'https://via.placeholder.com/342x513?text=No+Image';
+          const year = (m.release_date||'').slice(0,4) || 'N/A';
+
+          const card = document.createElement('div');
+          card.className = 'movie-card';
+          card.innerHTML = `
+            <img src="${poster}" alt="${m.title}">
+            <div class="meta">
+              <div class="title">${m.title}</div>
+              <div>${year}</div>
+            </div>
+          `;
+          card.addEventListener('click', ()=> loadByTMDbId(m.id, m.title));
+          results.appendChild(card);
+        }
+      }catch(err){
+        resultsHint.textContent = 'Search failed. Please try again.';
+        console.error(err);
+      }
     }
-  };
 
-  function loadFromFields(){
-    const imdbID = extractIMDb(input.value.trim());
-    if(!imdbID){
-      alert('Please enter a valid IMDb link or ID (e.g., tt11083552).');
-      input.focus();
-      return;
+    async function loadByTMDbId(tmdbId, title=''){
+      try{
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_KEY}&append_to_response=external_ids`);
+        const data = await res.json();
+        const imdbID = data?.external_ids?.imdb_id || data?.imdb_id;
+        if(!imdbID){
+          alert('IMDb ID not found for this title.');
+          return;
+        }
+        // Put into the existing input and play using your current flow
+        input.value = imdbID;
+        loadFromFields();
+        setStatus(`Loaded ${title || imdbID}.`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }catch(err){
+        alert('Could not load that movie.');
+        console.error(err);
+      }
     }
-    const embedURL = buildURL(select.value, imdbID);
-    if(!embedURL){
-      alert('Unknown server selected.');
-      return;
-    }
-    frame.src = embedURL;
-    setStatus(`Loaded ${imdbID} on ${select.options[select.selectedIndex].text}.`);
-    persist();
-  }
 
-  // Buttons
-  $('#watchBtn').addEventListener('click', loadFromFields);
-  $('#copyBtn').addEventListener('click', ()=>{
-    const imdbID = extractIMDb(input.value.trim());
-    if(!imdbID){ alert('Enter a valid IMDb ID first.'); return; }
-    const url = new URL(location.href);
-    url.searchParams.set('imdb', imdbID);
-    url.searchParams.set('server', select.value);
-    navigator.clipboard.writeText(url.toString()).then(()=> setStatus('Sharable link copied to clipboard.'));
-  });
-  $('#openTabBtn').addEventListener('click', ()=>{
-    const imdbID = extractIMDb(input.value.trim());
-    if(!imdbID){ alert('Enter a valid IMDb ID first.'); return; }
-    window.open(buildURL(select.value, imdbID), '_blank', 'noopener');
-  });
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e)=>{
-    if(e.key==='Enter' && document.activeElement === input){
-      e.preventDefault();
-      loadFromFields();
-    }
-    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='l'){
-      input.focus(); input.select();
-    }
-  });
-
-  // Startup
-  (function init(){
-    const params = new URLSearchParams(location.search);
-    const fromUrlID = extractIMDb(params.get('imdb')||'');
-    const fromUrlServer = params.get('server');
-    const lastIMDb = localStorage.getItem('lastIMDb');
-    const lastServer = localStorage.getItem('lastServer');
-
-    if(fromUrlID){ input.value = fromUrlID; }
-    else if(lastIMDb){ input.value = lastIMDb; }
-
-    if(fromUrlServer){ select.value = fromUrlServer; }
-    else if(lastServer){ select.value = lastServer; }
-
-    const idToLoad = extractIMDb(input.value.trim());
-    if(idToLoad){ frame.src = buildURL(select.value, idToLoad); }
-  })();
-
-  // Modals
-  const helpModal = document.getElementById('helpModal');
-  const aboutModal = document.getElementById('aboutModal');
-
-  document.getElementById('openHelp').addEventListener('click', () => {
-    // Always ensure link exists
-    const body = helpModal.querySelector('.modal-body');
-    if (!body.querySelector('.ublock-link')) {
-      const link = document.createElement('a');
-      link.href = HELP_URL;
-      link.target = '_blank';
-      link.rel = 'noopener';
-      link.className = 'ublock-link';
-      link.textContent = '👉 Install uBlock Origin Lite (Chrome Web Store)';
-      link.style.display = 'inline-block';
-      link.style.marginTop = '14px';
-      link.style.color = '#7c9cff';
-      body.appendChild(link);
-    }
-    helpModal.showModal();
-  });
-  document.getElementById('helpClose').addEventListener('click', () => helpModal.close());
-
-  document.getElementById('openAbout').addEventListener('click', () => aboutModal.showModal());
-  document.getElementById('aboutClose').addEventListener('click', () => aboutModal.close());
-</script>
-
+    document.getElementById('searchBtn').addEventListener('click', searchMovies);
+    document.getElementById('searchInput').addEventListener('keydown', e=>{
+      if(e.key==='Enter') searchMovies();
+    });
+  </script>
+</body>
+</html>
