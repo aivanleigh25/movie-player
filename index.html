@@ -194,6 +194,7 @@ const extractIMDb = (str='') => {
   return m ? m[0] : '';
 };
 
+// this is the script for server
 const buildURL = (server, imdbID) => {
   switch(server){
     case 'vidsrc':
@@ -202,6 +203,9 @@ const buildURL = (server, imdbID) => {
       return `https://vidsrc.to/embed/movie/${imdbID}`;
     case '2embed':
       return `https://www.2embed.cc/embed/${imdbID}`;
+    case 'noads': 
+      const raw = `https://vidsrc.to/embed/movie/${imdbID}`;
+      return `https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
     default:
       return '';
   }
@@ -259,5 +263,3 @@ async function searchTMDB(query){
   setStatus("Click a movie to watch.");
 }
 </script>
-</body>
-</html>
