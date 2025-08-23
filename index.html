@@ -1,39 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Movie Player</title>
   <style>
-    :root{--bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;--muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;--danger:#ff6b6b;--border:#2b3040}
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
-      background:linear-gradient(120deg,var(--bg),#0b0d12 60%);display:flex;min-height:100vh;}
-    .sidebar{position:fixed;inset:0 auto 0 0;width:120px;background:var(--panel);border-right:1px solid var(--border);
-      display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 10px;}
-    .brand{font-weight:800;font-size:14px;color:var(--brand);text-transform:uppercase}
-    .navlink{color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;padding:8px 10px;border-radius:10px;transition:.2s}
-    .navlink:hover{color:var(--text);background:var(--panel-2)}
-    .main{margin-left:140px;flex:1;display:flex;flex-direction:column;}
-    .header{padding:22px 20px;background:var(--panel);border-bottom:1px solid var(--border);}
-    .header h1{margin:0;font-size:24px}
-    .wrap{max-width:1000px;width:100%;margin:22px auto;padding:0 16px}
-    .searchbar{margin:16px 0 8px;display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:10px;}
-    .searchbar input{flex:1;min-width:200px;background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;}
-    .searchbar button{background:var(--accent);color:#06151a;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-    .searchbar button:hover{filter:brightness(1.05)}
-    .movie-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:12px;}
-    .movie-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;}
-    .movie-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
-    .movie-card img{width:100%;height:210px;object-fit:cover;}
+    :root {
+      --bg:#0f1115;--panel:#171923;--panel-2:#1f2230;--text:#eef2ff;
+      --muted:#aab2cf;--brand:#7c9cff;--accent:#51e1a7;
+      --danger:#ff6b6b;--border:#2b3040
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);background:linear-gradient(120deg,var(--bg),#0b0d12 60%);
+      min-height:100vh;display:flex;flex-direction:column;
+    }
+    header {padding:20px;background:var(--panel);border-bottom:1px solid var(--border);}
+    header h1{margin:0;font-size:24px}
+    .searchbar {
+      margin:16px auto;display:flex;gap:8px;align-items:center;
+      max-width:600px;width:100%;background:var(--panel);
+      border:1px solid var(--border);border-radius:14px;padding:10px;
+    }
+    .searchbar input {
+      flex:1;min-width:200px;background:var(--panel-2);border:1px solid var(--border);
+      color:var(--text);border-radius:10px;padding:10px 12px;
+    }
+    .searchbar button {
+      background:var(--accent);color:#06151a;border:none;border-radius:10px;
+      padding:10px 14px;font-weight:700;cursor:pointer;
+    }
+    .movie-grid {
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+      gap:14px;margin:20px;flex:1;
+    }
+    .movie-card {
+      background:var(--panel);border:1px solid var(--border);border-radius:12px;
+      overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;
+    }
+    .movie-card:hover {transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.35);}
+    .movie-card img {width:100%;height:210px;object-fit:cover;}
     .movie-card .meta{padding:8px;font-size:12px;color:var(--muted)}
     .movie-card .title{color:var(--text);font-weight:700;font-size:13px;margin:0 0 4px}
-    .player{margin-top:16px;background:#000;border:1px solid var(--border);border-radius:18px;overflow:hidden;}
-    .player .frame-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000}
-    iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+    .player {
+      margin:20px;background:#000;border:1px solid var(--border);
+      border-radius:18px;overflow:hidden;display:none;
+    }
+    .player .frame-wrap {position:relative;width:100%;aspect-ratio:16/9;background:#000}
+    iframe {position:absolute;inset:0;width:100%;height:100%;border:0;}
   </style>
 </head>
 <body>
+  <header>
+    <h1>🎬 Movie Player</h1>
+  </header>
+
+  <div class="searchbar">
+    <input id="query" placeholder="Search for a movie..."/>
+    <button onclick="searchMovies()">Search</button>
+  </div>
+
+  <div id="results" class="movie-grid"></div>
+
+  <div id="player" class="player">
+    <div class="frame-wrap">
+      <iframe id="movieFrame" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "YOUR_TMDB_API_KEY"; // 🔑 replace with your TMDB key
+    const PROXY = "https://your-proxy.com/embed?url="; // 🔗 your deployed VidSrc-NoAds proxy
+
+    async function searchMovies() {
+      const q = document.getElementById("query").value;
+      if (!q) return;
+      const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      renderResults(data.results);
+    }
+
+    function renderResults(movies) {
+      const grid = document.getElementById("results");
+      grid.innerHTML = "";
+      movies.forEach(m => {
+        const card = document.createElement("div");
+        card.className = "movie-card";
+        card.innerHTML = `
+          <img src="https://image.tmdb.org/t/p/w300${m.poster_path}" alt="${m.title}">
+          <div class="meta">
+            <div class="title">${m.title}</div>
+            <div>${m.release_date?.slice(0,4) || ""}</div>
+          </div>
+        `;
+        card.onclick = () => playMovie(m.id);
+        grid.appendChild(card);
+      });
+    }
+
+    async function playMovie(tmdbId) {
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/external_ids?api_key=${API_KEY}`);
+        const ids = await res.json();
+        const imdb = ids.imdb_id;
+        if (!imdb) return alert("No IMDb ID found.");
+        const embedUrl = `https://vidsrc.dev/embed/movie/${imdb}`;
+        const proxyUrl = `${PROXY}${encodeURIComponent(embedUrl)}`;
+        // try proxy first
+        document.getElementById("movieFrame").src = proxyUrl;
+        document.getElementById("player").style.display = "block";
+        // fallback check after 5s
+        setTimeout(() => {
+          if (!document.getElementById("movieFrame").contentWindow) {
+            document.getElementById("movieFrame").src = embedUrl;
+          }
+        }, 5000);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>
   <div class="sidebar">
     <div class="brand">MOVIES</div>
   </div>
