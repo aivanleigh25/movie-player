@@ -198,30 +198,24 @@ const extractIMDb = (str='') => {
 
 // this is the script for server
 function buildURL(server, imdbID, season = null, episode = null) {
-  let raw;
-
+  let raw = `https://vidsrc.in/embed/${imdbID}`;
   if (season && episode) {
-    // Series format: /imdbID/season-episode/
     raw = `https://vidsrc.in/embed/${imdbID}/${season}-${episode}/`;
-  } else {
-    // Movie format
-    raw = `https://vidsrc.in/embed/${imdbID}`;
   }
-
+  const proxyUrl = "https://freestreamingsite.netlify.app/.netlify/functions/proxy?url=";
   switch(server){
     case 'vidsrc':
-      return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
+      return `${proxyUrl}https://vidsrc.me/embed/movie?imdb=${imdbID}`;
     case 'vidsrcto':
-      return `https://vidsrc.to/embed/movie/${imdbID}`;
+      return `${proxyUrl}https://vidsrc.to/embed/movie/${imdbID}`;
     case '2embed':
-      return `https://www.2embed.cc/embed/${imdbID}`;
-    case 'noads': 
-      return `https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
+      return `${proxyUrl}https://www.2embed.cc/embed/${imdbID}`;
+    case 'noads':
+      return `${proxyUrl}https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
     default:
       return '';
   }
 }
-
 const setStatus = (msg) => statusText.textContent = msg;
 
 function loadFromFields(imdbIDOverride){
