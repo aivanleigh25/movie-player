@@ -206,7 +206,8 @@ const buildURL = (server, imdbID) => {
     case '2embed':
       return `https://www.2embed.cc/embed/${imdbID}`;
     case 'noads': 
-      const raw = `https://vidsrc.to/embed/movie/${imdbID}`;
+      // Clean ad-free player using the official demo proxy
+      const raw = `https://vidsrc.in/embed/${imdbID}`;
       return `https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
     default:
       return '';
