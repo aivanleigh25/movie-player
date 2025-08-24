@@ -489,6 +489,16 @@ window.addEventListener("load", () => {
 });
 
 </script>
+// auto-load from URL
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const imdb = params.get('imdb');
+  if(imdb && window.loadFromFields){
+    document.getElementById('imdbInput').value = imdb;
+    window.loadFromFields(imdb);
+  }
+});
+
 <!-- Mobile-specific fixes -->
 <script src="mobile-fix.js"></script>
 <script src="copy-link.js"></script>
