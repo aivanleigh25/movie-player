@@ -126,7 +126,6 @@
           <option value="vidsrcto">Server 2 – Vidsrc.to</option>
           <option value="2embed">Server 3 – 2Embed</option>
           <option value="noads">Server 4 – Soon!</option>
-
         </select>
         <button id="watchBtn" class="btn primary" type="button">▶ Watch</button>
         <button id="copyBtn" class="btn" type="button" title="Copy share link">🔗 Copy Link</button>
@@ -196,22 +195,21 @@ const extractIMDb = (str='') => {
   return m ? m[0] : '';
 };
 
-// this is the script for server
+// Updated buildURL without proxyUrl
 function buildURL(server, imdbID, season = null, episode = null) {
   let raw = `https://vidsrc.in/embed/${imdbID}`;
   if (season && episode) {
     raw = `https://vidsrc.in/embed/${imdbID}/${season}-${episode}/`;
   }
-  const proxyUrl = "https://freestreamingsite.netlify.app/.netlify/functions/proxy?url=";
   switch(server){
     case 'vidsrc':
-      return `${proxyUrl}https://vidsrc.me/embed/movie?imdb=${imdbID}`;
+      return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
     case 'vidsrcto':
-      return `${proxyUrl}https://vidsrc.to/embed/movie/${imdbID}`;
+      return `https://vidsrc.to/embed/movie/${imdbID}`;
     case '2embed':
-      return `${proxyUrl}https://www.2embed.cc/embed/${imdbID}`;
+      return `https://www.2embed.cc/embed/${imdbID}`;
     case 'noads':
-      return `${proxyUrl}https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
+      return `https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
     default:
       return '';
   }
@@ -227,9 +225,9 @@ function loadFromFields(imdbIDOverride){
   setStatus(`Loaded ${imdbID} on ${select.options[select.selectedIndex].text}.`);
 }
 
-$('#watchBtn').addEventListener('click', ()=> loadFromFields());
+$('#watchBtn').addEventListener('click', () => loadFromFields());
 
-document.addEventListener('keydown', e=>{
+document.addEventListener('keydown', e => {
   if(e.key==='Enter' && document.activeElement===input){
     e.preventDefault();
     if(extractIMDb(input.value.trim())) loadFromFields();
@@ -247,19 +245,19 @@ async function searchTMDB(query){
     setStatus("No results.");
     return;
   }
-  data.results.forEach(m=>{
+  data.results.forEach(m => {
     if(!m.poster_path) return;
-    const div=document.createElement("div");
-    div.className="movie";
-    div.innerHTML=`<img src="https://image.tmdb.org/t/p/w342${m.poster_path}"><div class="movie-title">${m.title}</div>`;
-    div.onclick= async ()=>{
-      const detRes=await fetch(TMDB_DETAILS(m.id));
-      const det=await detRes.json();
+    const div = document.createElement("div");
+    div.className = "movie";
+    div.innerHTML = `<img src="https://image.tmdb.org/t/p/w342${m.poster_path}"><div class="movie-title">${m.title}</div>`;
+    div.onclick = async () => {
+      const detRes = await fetch(TMDB_DETAILS(m.id));
+      const det = await detRes.json();
       if(det.imdb_id){
-        input.value=det.imdb_id;
+        input.value = det.imdb_id;
         loadFromFields(det.imdb_id);
-        resultsDiv.innerHTML="";
-      }else{
+        resultsDiv.innerHTML = "";
+      } else {
         setStatus("No IMDb ID found for this movie.");
       }
     };
