@@ -93,6 +93,43 @@
 .homepage-link:hover h2 {
   text-decoration: underline;
 }
+.resume-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #1e1e1e;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.3s ease-out;
+  z-index: 9999;
+}
+.resume-popup button {
+  background: #ff9800;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.resume-popup button#resumeClose {
+  background: transparent;
+  color: #fff;
+  font-size: 16px;
+  padding: 0 6px;
+}
+.hidden {
+  display: none;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 
   </style>
 </head>
@@ -107,17 +144,12 @@
   <button class="navbtn" id="openHistory">History</button> <!-- NEW -->
 </div>
 
-  <!-- Continue Watching Modal --> <!-- NEW -->
-  <dialog id="continueModal">
-    <div class="modal-header">
-      <div class="modal-title">Continue Watching</div>
-      <button class="close-x" id="continueClose" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body">
-      <p id="continueText"></p>
-      <button class="btn primary" id="resumeBtn">▶ Resume</button>
-    </div>
-  </dialog>
+  <!-- Floating Resume Popup -->
+<div id="resumePopup" class="resume-popup hidden">
+  <p id="continueText">Resume watching?</p>
+  <button id="resumeBtn">Resume</button>
+  <button id="resumeClose">✕</button>
+</div>
 
   <!-- History Modal --> <!-- NEW -->
   <dialog id="historyModal">
@@ -390,17 +422,28 @@ function loadHistory(){
   });
 }
 
-// Show Continue Watching popup if exists
-window.addEventListener('DOMContentLoaded', () => {
-  const last = JSON.parse(localStorage.getItem('lastWatch') || "null");
+const resumePopup = $('#resumePopup');
+const resumeClose = $('#resumeClose');
+const resumeBtn = $('#resumeBtn');
+
+// Show popup if lastWatch exists
+window.addEventListener("load", () => {
+  let last = JSON.parse(localStorage.getItem('lastWatch') || "null");
   if(last){
-    continueText.textContent = `You last watched: ${last.title || last.imdbID}. Do you want to resume?`;
-    continueModal.showModal();
-    resumeBtn.onclick = () => {
-      input.value = last.imdbID;
-      loadFromFields(last.imdbID); // this will reload the iframe
-      continueModal.close();
-    };
+    $('#continueText').textContent = `Resume "${last.title}"?`;
+    resumePopup.classList.remove("hidden");
+  }
+});
+
+resumeClose.addEventListener("click", () => {
+  resumePopup.classList.add("hidden");
+});
+
+resumeBtn.addEventListener("click", () => {
+  let last = JSON.parse(localStorage.getItem('lastWatch') || "null");
+  if(last){
+    loadFromFields(last.imdbID);
+    resumePopup.classList.add("hidden");
   }
 });
 
