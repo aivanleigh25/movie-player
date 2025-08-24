@@ -16,76 +16,36 @@
       background:linear-gradient(120deg,var(--bg),#0b0d12 60%);
       display:flex; min-height:100vh;
     }
-
-    /* Sidebar */
-    .sidebar{
-      position:fixed; inset:0 auto 0 0; width:120px; background:var(--panel);
-      border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;
-    }
+    .sidebar{position:fixed; inset:0 auto 0 0; width:120px; background:var(--panel);
+      border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;}
     .brand{font-weight:800; letter-spacing:.5px; font-size:14px; color:var(--brand); text-transform:uppercase}
     .navlink{color:var(--muted); text-decoration:none; font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; transition:all .2s ease}
     .navlink:hover{color:var(--text); background:var(--panel-2)}
-    .navbtn {
-      all: unset;
-      cursor: pointer;
-      color: var(--muted);
-      font-weight: 600;
-      font-size: 13px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      text-align: center;
-      transition: all .2s ease;
-    }
-    .navbtn:hover {
-      color: var(--text);
-      background: var(--panel-2);
-    }
-
-    /* Main */
+    .navbtn{all:unset; cursor:pointer; color:var(--muted); font-weight:600; font-size:13px; padding:8px 10px; border-radius:10px; text-align:center; transition:all .2s ease;}
+    .navbtn:hover{color:var(--text); background:var(--panel-2)}
     .main{margin-left:140px; flex:1; display:flex; flex-direction:column;}
     .header{padding:22px 20px; background:var(--panel); border-bottom:1px solid var(--border);}
     .header h1{margin:0; font-size:24px}
     .header p{margin:6px 0 0; color:var(--muted); font-size:13px}
-
     .wrap{max-width:1000px; width:100%; margin:22px auto; padding:0 16px}
-
     .toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px}
     .input{flex:1; min-width:260px; background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:10px 12px; outline:none}
-    .select,.btn{background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:10px 12px; cursor:pointer}
+    .select,.btn{background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:12px; padding:10px 12px; cursor:pointer; flex:0 0 auto;}
     .btn{display:inline-flex; align-items:center; gap:8px; font-weight:700}
     .btn:hover{filter:brightness(1.1)}
     .btn.primary{background:var(--brand); border-color:transparent; color:#0a1024}
     .btn.ghost{background:transparent}
-
     .player{margin-top:16px; background:#000; border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,.45)}
     .player .frame-wrap{position:relative; width:100%; aspect-ratio:16/9; background:#000}
     iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
-
     .status{margin-top:10px; color:var(--muted); font-size:12px; display:flex; gap:10px; align-items:center}
     .status .dot{width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent)}
-
     .footer{margin:24px 0 40px; color:var(--muted); font-size:12px;}
-
-    /* Search Results */
-    .results {
-      margin-top:20px;
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-      gap:14px;
-    }
-    .movie {
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:12px;
-      overflow:hidden;
-      cursor:pointer;
-      transition:transform .2s;
-    }
+    .results{margin-top:20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:14px;}
+    .movie{background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; transition:transform .2s;}
     .movie:hover{transform:scale(1.05)}
     .movie img{width:100%; display:block}
     .movie-title{padding:8px; font-size:13px; font-weight:600; color:var(--text); text-align:center}
-
-    /* Modal */
     dialog{border:1px solid var(--border); background:var(--panel); color:var(--text); border-radius:16px; padding:0; width:min(720px,94vw)}
     .modal-header{display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border)}
     .modal-title{font-weight:800}
@@ -93,8 +53,6 @@
     .modal-body ol{margin:0; padding-left:18px}
     .close-x{all:unset; cursor:pointer; padding:6px 8px; border-radius:10px}
     .close-x:hover{background:var(--panel-2)}
-
-    /* Small screens */
     @media (max-width: 860px){
       .sidebar{position:static; width:auto; height:auto; flex-direction:row; justify-content:space-between}
       .main{margin-left:0}
@@ -110,6 +68,7 @@
     <button class="navbtn" id="openHelp">Ad-block</button>
     <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
     <button class="navbtn" id="openAbout">About</button>
+    <button class="navbtn" id="openHistory">History</button>
   </div>
 
   <main class="main">
@@ -121,6 +80,7 @@
     <section class="wrap">
       <div class="toolbar" role="group" aria-label="Controls">
         <input id="imdbInput" class="input" placeholder="Enter IMDb link, ID, or movie name" autocomplete="off" />
+        <button id="searchBtn" class="btn" type="button">🔍 Search</button>
         <select id="serverSelect" class="select" aria-label="Server">
           <option value="vidsrc">Server 1 – Vidsrc.me</option>
           <option value="vidsrcto">Server 2 – Vidsrc.to</option>
@@ -151,6 +111,26 @@
     </section>
   </main>
 
+  <!-- History Modal -->
+  <dialog id="historyModal">
+    <div class="modal-header">
+      <div class="modal-title">Watch History</div>
+      <button class="close-x" id="historyClose">✕</button>
+    </div>
+    <div class="modal-body" id="historyBody">
+      <p>No movies watched yet.</p>
+    </div>
+  </dialog>
+
+  <!-- Continue Watching Popup -->
+  <div id="continuePopup" style="
+    position:fixed;bottom:20px;right:20px;background:var(--panel);
+    border:1px solid var(--border);border-radius:12px;padding:12px;width:200px;
+    display:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.4);z-index:1000;">
+    <div style="font-size:14px;font-weight:600;margin-bottom:6px;">Continue watching</div>
+    <div id="continueMovie" style="font-size:13px;color:var(--muted);"></div>
+  </div>
+
   <!-- Ad-block Help Modal -->
   <dialog id="helpModal">
     <div class="modal-header">
@@ -178,106 +158,9 @@
     </div>
   </dialog>
 
-<script>
-const $ = sel => document.querySelector(sel);
-
-// Modal logic
-const helpModal = $('#helpModal');
-const aboutModal = $('#aboutModal');
-const openHelpBtn = $('#openHelp');
-const openAboutBtn = $('#openAbout');
-const helpClose = $('#helpClose');
-const aboutClose = $('#aboutClose');
-
-openHelpBtn.addEventListener('click', () => helpModal.showModal());
-openAboutBtn.addEventListener('click', () => aboutModal.showModal());
-
-helpClose.addEventListener('click', () => helpModal.close());
-aboutClose.addEventListener('click', () => aboutModal.close());
-
-const input = $('#imdbInput');
-const select = $('#serverSelect');
-const frame = $('#movieFrame');
-const statusText = $('#statusText');
-const resultsDiv = $('#results');
-
-const API_KEY = "6452370c23b5a8497b9a201cf46fba42";
-const TMDB_SEARCH = "https://api.themoviedb.org/3/search/movie?api_key="+API_KEY+"&query=";
-const TMDB_DETAILS = id => `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}`;
-
-const extractIMDb = (str='') => {
-  const m = String(str).match(/tt\d{7,8}/i);
-  return m ? m[0] : '';
-};
-
-// Updated buildURL without proxyUrl
-function buildURL(server, imdbID, season = null, episode = null) {
-  let raw = `https://vidsrc.in/embed/${imdbID}`;
-  if (season && episode) {
-    raw = `https://vidsrc.in/embed/${imdbID}/${season}-${episode}/`;
-  }
-  switch(server){
-    case 'vidsrc':
-      return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
-    case 'vidsrcto':
-      return `https://vidsrc.to/embed/movie/${imdbID}`;
-    case '2embed':
-      return `https://www.2embed.cc/embed/${imdbID}`;
-    case 'noads':
-      return `https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
-    default:
-      return '';
-  }
-}
-const setStatus = (msg) => statusText.textContent = msg;
-
-function loadFromFields(imdbIDOverride){
-  const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
-  if(!imdbID){ alert('Please enter a valid IMDb ID.'); return; }
-  const embedURL = buildURL(select.value, imdbID);
-  if(!embedURL){ alert('Unknown server selected.'); return; }
-  frame.src = embedURL;
-  setStatus(`Loaded ${imdbID} on ${select.options[select.selectedIndex].text}.`);
-}
-
-$('#watchBtn').addEventListener('click', () => loadFromFields());
-
-document.addEventListener('keydown', e => {
-  if(e.key==='Enter' && document.activeElement===input){
-    e.preventDefault();
-    if(extractIMDb(input.value.trim())) loadFromFields();
-    else searchTMDB(input.value.trim());
-  }
-});
-
-async function searchTMDB(query){
-  if(!query) return;
-  setStatus("Searching…");
-  const res = await fetch(TMDB_SEARCH+encodeURIComponent(query));
-  const data = await res.json();
-  resultsDiv.innerHTML="";
-  if(!data.results || !data.results.length){
-    setStatus("No results.");
-    return;
-  }
-  data.results.forEach(m => {
-    if(!m.poster_path) return;
-    const div = document.createElement("div");
-    div.className = "movie";
-    div.innerHTML = `<img src="https://image.tmdb.org/t/p/w342${m.poster_path}"><div class="movie-title">${m.title}</div>`;
-    div.onclick = async () => {
-      const detRes = await fetch(TMDB_DETAILS(m.id));
-      const det = await detRes.json();
-      if(det.imdb_id){
-        input.value = det.imdb_id;
-        loadFromFields(det.imdb_id);
-        resultsDiv.innerHTML = "";
-      } else {
-        setStatus("No IMDb ID found for this movie.");
-      }
-    };
-    resultsDiv.appendChild(div);
-  });
-  setStatus("Click a movie to watch.");
-}
-</script>
+  <!-- External scripts -->
+  <script src="search.js"></script>
+  <script src="history.js"></script>
+  <script src="continue.js"></script>
+</body>
+</html>
