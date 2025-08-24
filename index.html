@@ -366,6 +366,8 @@ historyClose.addEventListener('click', () => historyModal.close());
 continueClose.addEventListener('click', () => continueModal.close());
 
 function saveHistory(imdbID, title){
+  if(!imdbID || imdbID.toLowerCase().includes("free")) return; // 🚫 block bad entries
+
   let history = JSON.parse(localStorage.getItem('watchHistory') || "[]");
   history = history.filter(h => h.imdbID !== imdbID); // avoid duplicates
   history.unshift({ imdbID, title, time: Date.now() });
@@ -395,24 +397,26 @@ function renderHistory(){
   });
 }
 
-// Hook into loadFromFields to save history
+// ✅ Hook into loadFromFields but filter out junk
 const _oldLoad = loadFromFields;
 loadFromFields = function(imdbIDOverride){
   _oldLoad(imdbIDOverride);
-  
+
   const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
-  if(imdbID){
-    // Try to grab movie title safely
-    let currentTitle = "";
-    const activeCard = resultsDiv.querySelector(".movie-title");
-    if (activeCard) {
-      currentTitle = activeCard.textContent;
-    } else {
-      const header = document.querySelector(".header h1");
-      if (header) currentTitle = header.textContent;
-    }
-    saveHistory(imdbID, currentTitle || imdbID);
+  if(!imdbID || imdbID.toLowerCase().includes("free")) return; // 🚫 skip junk
+
+  let currentTitle = "";
+  const activeCard = resultsDiv.querySelector(".movie-title");
+  if (activeCard) {
+    currentTitle = activeCard.textContent;
+  } else {
+    const header = document.querySelector(".header h1");
+    if (header) currentTitle = header.textContent;
   }
+
+  if(currentTitle && currentTitle.toLowerCase().includes("free")) return; // 🚫 skip junk
+
+  saveHistory(imdbID, currentTitle || imdbID);
 };
 
 // Show Continue Watching popup if exists
