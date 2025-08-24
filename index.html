@@ -538,12 +538,13 @@ homeBtn.addEventListener("click", () => {
     window.location.href = homeURL;
 });
 
-// --- Server auto-switch ---
-const select = document.getElementById('serverSelect');
-const input = document.getElementById('imdbInput');
-select.addEventListener('change', () => {
-    if(input.value.trim()){
-        window.loadFromFields(); // reload movie automatically
+  // Server auto-switch
+  const select = document.getElementById('serverSelect');
+  const input = document.getElementById('imdbInput'); // make sure input exists
+  select.addEventListener('change', () => {
+      const imdbID = input.value.trim();
+      if(imdbID && extractIMDb(imdbID)){  // only reload if it's a valid IMDb ID
+          loadFromFields(); 
     }
 });
 </script>
