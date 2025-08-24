@@ -84,18 +84,28 @@
       .sidebar{position:static; width:auto; height:auto; flex-direction:row; justify-content:space-between}
       .main{margin-left:0}
       .brand{display:none}
-    }
+    .homepage-link h2 {
+  font-weight: 900;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit; /* keep same color as sidebar */
+}
+.homepage-link:hover h2 {
+  text-decoration: underline;
+}
+
   </style>
 </head>
 <body>
     <div class="sidebar">
-    <h2>Movie<br>Player</h2>
-    <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
-    <button class="navbtn" id="openHelp">Ad-block</button>
-    <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
-    <button class="navbtn" id="openAbout">About</button>
-    <button class="navbtn" id="openHistory">History</button> <!-- NEW -->
-  </div>
+  <a href="index.html" class="navlink homepage-link"><h2><b>Movie<br>Player</b></h2></a>
+  
+  <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
+  <button class="navbtn" id="openHelp">Ad-block</button>
+  <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
+  <button class="navbtn" id="openAbout">About</button>
+  <button class="navbtn" id="openHistory">History</button> <!-- NEW -->
+</div>
 
   <!-- Continue Watching Modal --> <!-- NEW -->
   <dialog id="continueModal">
@@ -342,55 +352,43 @@ const continueText = $('#continueText');
 const resumeBtn = $('#resumeBtn');
 
 openHistoryBtn.addEventListener('click', () => {
-  renderHistory();
+  loadHistory();
   historyModal.showModal();
 });
 historyClose.addEventListener('click', () => historyModal.close());
 continueClose.addEventListener('click', () => continueModal.close());
 
 function saveHistory(imdbID, title){
-  let history = JSON.parse(localStorage.getItem('watchHistory') || "[]");
-  history = history.filter(h => h.imdbID !== imdbID); // avoid duplicates
-  history.unshift({ imdbID, title, time: Date.now() });
-  if(history.length > 20) history.pop();
-  localStorage.setItem('watchHistory', JSON.stringify(history));
-  localStorage.setItem('lastWatch', JSON.stringify({ imdbID, title }));
+  let hist = JSON.parse(localStorage.getItem('history') || "[]");
+  hist.unshift({
+    imdbID,
+    title: title || imdbID,
+    time: new Date().toLocaleString()
+  });
+  hist = hist.slice(0, 20); // keep last 20
+  localStorage.setItem('history', JSON.stringify(hist));
+  localStorage.setItem('lastWatch', JSON.stringify(hist[0]));
 }
 
-function renderHistory(){
-  let history = JSON.parse(localStorage.getItem('watchHistory') || "[]");
+function loadHistory(){
   historyList.innerHTML = "";
-  if(!history.length){
+  let hist = JSON.parse(localStorage.getItem('history') || "[]");
+  if(!hist.length){
     historyList.innerHTML = "<li>No history yet.</li>";
     return;
   }
-  history.forEach(h => {
+  hist.forEach(item => {
     const li = document.createElement("li");
-    const d = new Date(h.time).toLocaleString();
-    li.textContent = `${h.title || h.imdbID} — ${d}`;
-    li.style.cursor = "pointer";
+    li.textContent = `${item.title} — ${item.time}`;
+    li.className = "cursor-pointer hover:underline";
     li.onclick = () => {
-      input.value = h.imdbID;
-      loadFromFields(h.imdbID);
+      input.value = item.imdbID;
+      loadFromFields(item.imdbID);
       historyModal.close();
     };
     historyList.appendChild(li);
   });
 }
-
-// Hook into loadFromFields to save history
-const _oldLoad = loadFromFields;
-loadFromFields = function(imdbIDOverride){
-  _oldLoad(imdbIDOverride);
-  const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
-  if(imdbID){
-    // Try to grab the currently selected movie title from results
-    let currentTitle = "";
-    const activeCard = resultsDiv.querySelector(".movie-title");
-    if (activeCard) currentTitle = activeCard.textContent;
-    saveHistory(imdbID, currentTitle || imdbID);
-  }
-};
 
 // Show Continue Watching popup if exists
 window.addEventListener('DOMContentLoaded', () => {
