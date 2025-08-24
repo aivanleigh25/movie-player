@@ -181,19 +181,30 @@
 
   <!-- Ad-block Help Modal -->
   <dialog id="helpModal">
-    <div class="modal-header">
-      <div class="modal-title">Watch with fewer ads using uBlock Origin Lite</div>
-      <button class="close-x" id="helpClose" aria-label="Close">✕</button>
+  <div class="modal-header">
+    <div class="modal-title">Watch with fewer ads using 
+      <a href="https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh?hl=en" 
+         target="_blank" rel="noopener noreferrer">
+        uBlock Origin Lite
+      </a>
     </div>
-    <div class="modal-body">
-      <p>These steps are for Chromium-based browsers (Chrome, Edge, Brave, etc.). For Firefox, install the classic <em>uBlock Origin</em> add-on.</p>
-      <ol>
-        <li>Install <strong>uBlock Origin Lite</strong> from the Chrome Web Store.</li>
-        <li>Pin it and make sure blocking is <strong>On</strong> for this site.</li>
-        <li>Reload. Most popups/banners should be gone.</li>
-      </ol>
-    </div>
-  </dialog>
+    <button class="close-x" id="helpClose" aria-label="Close">✕</button>
+  </div>
+  <div class="modal-body">
+    <p>These steps are for Chromium-based browsers (Chrome, Edge, Brave, etc.). For Firefox, install the classic <em>uBlock Origin</em> add-on.</p>
+    <ol>
+      <li>Install <strong>
+        <a href="https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh?hl=en" 
+           target="_blank" rel="noopener noreferrer">
+           uBlock Origin Lite
+        </a>
+      </strong> from the Chrome Web Store.</li>
+      <li>Pin it and make sure blocking is <strong>On</strong> for this site.</li>
+      <li>Reload. Most popups/banners should be gone.</li>
+    </ol>
+  </div>
+</dialog>
+
 
   <!-- About Modal -->
   <dialog id="aboutModal">
@@ -464,6 +475,18 @@ window.addEventListener('DOMContentLoaded', () => {
 const homeBtn = document.getElementById("homeBtn");
 homeBtn.addEventListener("click", () => {
   window.location.href = "https://freestreamingsite.netlify.app/"; // change if different homepage
+});
+window.addEventListener("load", () => {
+  console.log(`
+██   ██ ██    ██ ██    ██ ██ 
+██   ██ ██    ██  ██  ██  ██ 
+███████ ██    ██   ████   ██ 
+██   ██ ██    ██    ██       
+██   ██  ██████     ██    ██ 
+                                                        
+  `);
+
+  console.log("nag unsa ka diri dawg 🐶");
 });
 
 </script>
