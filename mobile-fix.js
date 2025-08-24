@@ -67,7 +67,7 @@ const input = document.getElementById('imdbInput');
 copyBtn.addEventListener('click', async () => {
   const imdbID = input.value.trim();
   if(!imdbID){
-    alert("Please enter a movie or IMDb ID first.");
+    alert("Pangita sag salida dawg");
     return;
   }
 
