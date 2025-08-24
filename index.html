@@ -136,7 +136,7 @@
 <body>
     <div class="sidebar">
   <a href="index.html" class="navlink homepage-link"><h2><b>Movie<br>Player</b></h2></a>
-  
+  // Nag unsa manka diri dawg -Justin Nabunturan
   <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
   <button class="navbtn" id="openHelp">Ad-block</button>
   <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
@@ -426,24 +426,17 @@ const resumePopup = $('#resumePopup');
 const resumeClose = $('#resumeClose');
 const resumeBtn = $('#resumeBtn');
 
-// Show popup if lastWatch exists
-window.addEventListener("load", () => {
-  let last = JSON.parse(localStorage.getItem('lastWatch') || "null");
+// Show Continue Watching popup if exists
+window.addEventListener('DOMContentLoaded', () => {
+  const last = JSON.parse(localStorage.getItem('lastWatch') || "null");
   if(last){
-    $('#continueText').textContent = `Resume "${last.title}"?`;
-    resumePopup.classList.remove("hidden");
-  }
-});
-
-resumeClose.addEventListener("click", () => {
-  resumePopup.classList.add("hidden");
-});
-
-resumeBtn.addEventListener("click", () => {
-  let last = JSON.parse(localStorage.getItem('lastWatch') || "null");
-  if(last){
-    loadFromFields(last.imdbID);
-    resumePopup.classList.add("hidden");
+    continueText.textContent = `You last watched: ${last.title || last.imdbID}. Do you want to resume?`;
+    continueModal.showModal();
+    resumeBtn.onclick = () => {
+      input.value = last.imdbID;
+      loadFromFields(last.imdbID); // this will reload the iframe
+      continueModal.close();
+    };
   }
 });
 
