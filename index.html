@@ -180,6 +180,21 @@
 
 <script>
 const $ = sel => document.querySelector(sel);
+
+// Modal logic
+const helpModal = $('#helpModal');
+const aboutModal = $('#aboutModal');
+const openHelpBtn = $('#openHelp');
+const openAboutBtn = $('#openAbout');
+const helpClose = $('#helpClose');
+const aboutClose = $('#aboutClose');
+
+openHelpBtn.addEventListener('click', () => helpModal.showModal());
+openAboutBtn.addEventListener('click', () => aboutModal.showModal());
+
+helpClose.addEventListener('click', () => helpModal.close());
+aboutClose.addEventListener('click', () => aboutModal.close());
+
 const input = $('#imdbInput');
 const select = $('#serverSelect');
 const frame = $('#movieFrame');
@@ -266,3 +281,4 @@ async function searchTMDB(query){
   setStatus("Click a movie to watch.");
 }
 </script>
+
