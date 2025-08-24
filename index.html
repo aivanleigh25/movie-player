@@ -489,7 +489,8 @@ window.addEventListener("load", () => {
 });
 
 </script>
-// auto-load from URL
+<!-- Auto-load movie from URL -->
+<script>
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const imdb = params.get('imdb');
@@ -498,6 +499,7 @@ window.addEventListener('DOMContentLoaded', () => {
     window.loadFromFields(imdb);
   }
 });
+</script>
 
 <!-- Mobile-specific fixes -->
 <script src="mobile-fix.js"></script>
