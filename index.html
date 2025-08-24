@@ -384,7 +384,11 @@ loadFromFields = function(imdbIDOverride){
   _oldLoad(imdbIDOverride);
   const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
   if(imdbID){
-    saveHistory(imdbID, document.querySelector(".header h1").textContent || imdbID);
+    // Try to grab the currently selected movie title from results
+    let currentTitle = "";
+    const activeCard = resultsDiv.querySelector(".movie-title");
+    if (activeCard) currentTitle = activeCard.textContent;
+    saveHistory(imdbID, currentTitle || imdbID);
   }
 };
 
@@ -396,7 +400,7 @@ window.addEventListener('DOMContentLoaded', () => {
     continueModal.showModal();
     resumeBtn.onclick = () => {
       input.value = last.imdbID;
-      loadFromFields(last.imdbID);
+      loadFromFields(last.imdbID); // this will reload the iframe
       continueModal.close();
     };
   }
