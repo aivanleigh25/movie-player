@@ -88,13 +88,38 @@
   </style>
 </head>
 <body>
-  <div class="sidebar">
+    <div class="sidebar">
     <h2>Movie<br>Player</h2>
     <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
     <button class="navbtn" id="openHelp">Ad-block</button>
     <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
     <button class="navbtn" id="openAbout">About</button>
+    <button class="navbtn" id="openHistory">History</button> <!-- NEW -->
   </div>
+
+  <!-- Continue Watching Modal --> <!-- NEW -->
+  <dialog id="continueModal">
+    <div class="modal-header">
+      <div class="modal-title">Continue Watching</div>
+      <button class="close-x" id="continueClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="continueText"></p>
+      <button class="btn primary" id="resumeBtn">▶ Resume</button>
+    </div>
+  </dialog>
+
+  <!-- History Modal --> <!-- NEW -->
+  <dialog id="historyModal">
+    <div class="modal-header">
+      <div class="modal-title">Watch History</div>
+      <button class="close-x" id="historyClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <ul id="historyList"></ul>
+    </div>
+  </dialog>
+
 
   <main class="main">
     <header class="header">
@@ -305,6 +330,78 @@ async function loadTrending() {
   setStatus("Trending this week:");
 }
 window.addEventListener('DOMContentLoaded', loadTrending);
+// --- NEW: Continue Watching + History feature ---
+const historyModal = $('#historyModal');
+const historyClose = $('#historyClose');
+const openHistoryBtn = $('#openHistory');
+const historyList = $('#historyList');
+
+const continueModal = $('#continueModal');
+const continueClose = $('#continueClose');
+const continueText = $('#continueText');
+const resumeBtn = $('#resumeBtn');
+
+openHistoryBtn.addEventListener('click', () => {
+  renderHistory();
+  historyModal.showModal();
+});
+historyClose.addEventListener('click', () => historyModal.close());
+continueClose.addEventListener('click', () => continueModal.close());
+
+function saveHistory(imdbID, title){
+  let history = JSON.parse(localStorage.getItem('watchHistory') || "[]");
+  history = history.filter(h => h.imdbID !== imdbID); // avoid duplicates
+  history.unshift({ imdbID, title, time: Date.now() });
+  if(history.length > 20) history.pop();
+  localStorage.setItem('watchHistory', JSON.stringify(history));
+  localStorage.setItem('lastWatch', JSON.stringify({ imdbID, title }));
+}
+
+function renderHistory(){
+  let history = JSON.parse(localStorage.getItem('watchHistory') || "[]");
+  historyList.innerHTML = "";
+  if(!history.length){
+    historyList.innerHTML = "<li>No history yet.</li>";
+    return;
+  }
+  history.forEach(h => {
+    const li = document.createElement("li");
+    const d = new Date(h.time).toLocaleString();
+    li.textContent = `${h.title || h.imdbID} — ${d}`;
+    li.style.cursor = "pointer";
+    li.onclick = () => {
+      input.value = h.imdbID;
+      loadFromFields(h.imdbID);
+      historyModal.close();
+    };
+    historyList.appendChild(li);
+  });
+}
+
+// Hook into loadFromFields to save history
+const _oldLoad = loadFromFields;
+loadFromFields = function(imdbIDOverride){
+  _oldLoad(imdbIDOverride);
+  const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
+  if(imdbID){
+    saveHistory(imdbID, document.querySelector(".header h1").textContent || imdbID);
+  }
+};
+
+// Show Continue Watching popup if exists
+window.addEventListener('DOMContentLoaded', () => {
+  const last = JSON.parse(localStorage.getItem('lastWatch') || "null");
+  if(last){
+    continueText.textContent = `You last watched: ${last.title || last.imdbID}. Do you want to resume?`;
+    continueModal.showModal();
+    resumeBtn.onclick = () => {
+      input.value = last.imdbID;
+      loadFromFields(last.imdbID);
+      continueModal.close();
+    };
+  }
+});
+
 </script>
 </body>
 </html>
