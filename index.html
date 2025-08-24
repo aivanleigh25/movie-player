@@ -365,6 +365,27 @@ openHistoryBtn.addEventListener('click', () => {
 historyClose.addEventListener('click', () => historyModal.close());
 continueClose.addEventListener('click', () => continueModal.close());
 
+// 🔑 TMDB API key 
+const TMDB_KEY = "6452370c23b5a8497b9a201cf46fba42"; 
+
+async function fetchTitleFromTMDB(imdbID) {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/find/${imdbID}?api_key=${TMDB_KEY}&external_source=imdb_id`
+    );
+    const data = await res.json();
+    if (data.movie_results?.length) {
+      return data.movie_results[0].title;
+    } else if (data.tv_results?.length) {
+      return data.tv_results[0].name;
+    }
+    return imdbID; // fallback
+  } catch (e) {
+    console.error("TMDB lookup failed:", e);
+    return imdbID;
+  }
+}
+
 function saveHistory(imdbID, title){
   if(!imdbID || imdbID.toLowerCase().includes("free")) return; // 🚫 block bad entries
 
@@ -390,33 +411,27 @@ function renderHistory(){
     li.style.cursor = "pointer";
     li.onclick = () => {
       input.value = h.imdbID;
-      loadFromFields(h.imdbID);   // ✅ redirect works here
+      loadFromFields(h.imdbID);
       historyModal.close();
     };
     historyList.appendChild(li);
   });
 }
 
-// ✅ Hook into loadFromFields but filter out junk
+// ✅ Hook into loadFromFields but fetch title from TMDB
 const _oldLoad = loadFromFields;
-loadFromFields = function(imdbIDOverride){
+loadFromFields = async function(imdbIDOverride){
   _oldLoad(imdbIDOverride);
 
   const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
-  if(!imdbID || imdbID.toLowerCase().includes("free")) return; // 🚫 skip junk
+  if(!imdbID || imdbID.toLowerCase().includes("free")) return;
 
-  let currentTitle = "";
-  const activeCard = resultsDiv.querySelector(".movie-title");
-  if (activeCard) {
-    currentTitle = activeCard.textContent;
-  } else {
-    const header = document.querySelector(".header h1");
-    if (header) currentTitle = header.textContent;
+  // fetch proper title from TMDB
+  const tmdbTitle = await fetchTitleFromTMDB(imdbID);
+
+  if(tmdbTitle && !tmdbTitle.toLowerCase().includes("free")){
+    saveHistory(imdbID, tmdbTitle);
   }
-
-  if(currentTitle && currentTitle.toLowerCase().includes("free")) return; // 🚫 skip junk
-
-  saveHistory(imdbID, currentTitle || imdbID);
 };
 
 // Show Continue Watching popup if exists
