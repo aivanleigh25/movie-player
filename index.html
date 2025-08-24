@@ -85,11 +85,28 @@
       .main{margin-left:0}
       .brand{display:none}
     }
+    .home-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.home-btn:hover {
+  text-decoration: underline;
+}
+
   </style>
 </head>
 <body>
     <div class="sidebar">
-    <h2>Movie<br>Player</h2>
+   <button id="homeBtn" class="home-btn">
+  <strong>Movie<br>Player</strong>
+   </button>
     <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
     <button class="navbtn" id="openHelp">Ad-block</button>
     <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
@@ -371,7 +388,7 @@ function renderHistory(){
     li.style.cursor = "pointer";
     li.onclick = () => {
       input.value = h.imdbID;
-      loadFromFields(h.imdbID);
+      loadFromFields(h.imdbID);   // ✅ redirect works here
       historyModal.close();
     };
     historyList.appendChild(li);
@@ -382,13 +399,18 @@ function renderHistory(){
 const _oldLoad = loadFromFields;
 loadFromFields = function(imdbIDOverride){
   _oldLoad(imdbIDOverride);
+  
   const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
   if(imdbID){
-    saveHistory(imdbID, document.querySelector(".header h1").textContent || imdbID);
-    // Try to grab the currently selected movie title from results
+    // Try to grab movie title safely
     let currentTitle = "";
     const activeCard = resultsDiv.querySelector(".movie-title");
-    if (activeCard) currentTitle = activeCard.textContent;
+    if (activeCard) {
+      currentTitle = activeCard.textContent;
+    } else {
+      const header = document.querySelector(".header h1");
+      if (header) currentTitle = header.textContent;
+    }
     saveHistory(imdbID, currentTitle || imdbID);
   }
 };
@@ -416,7 +438,14 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   }
 });
+// --- History + Continue Watching ---
+// (Nag unsa ka diri dawg)
 
+// --- Home button redirect ---
+const homeBtn = document.getElementById("homeBtn");
+homeBtn.addEventListener("click", () => {
+  window.location.href = "https://freestreamingsite.netlify.app/"; // change if different homepage
+});
 
 </script>
 </body>
