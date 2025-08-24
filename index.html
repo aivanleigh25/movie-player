@@ -473,7 +473,12 @@ window.addEventListener('DOMContentLoaded', () => {
 // --- Home button redirect ---
 const homeBtn = document.getElementById("homeBtn");
 homeBtn.addEventListener("click", () => {
-  window.location.href = "https://freestreamingsite.netlify.app/"; // change if different homepage
+    const input = document.getElementById("imdbInput");
+    const imdbID = input.value.trim();
+    const homeURL = imdbID 
+        ? `https://freestreamingsite.netlify.app/?imdb=${encodeURIComponent(imdbID)}`
+        : `https://freestreamingsite.netlify.app/`;
+    window.location.href = homeURL;
 });
 window.addEventListener("load", () => {
   console.log(`
@@ -540,29 +545,6 @@ const input = document.getElementById('imdbInput');
 select.addEventListener('change', () => {
     if(input.value.trim()){
         window.loadFromFields(); // reload movie automatically
-    }
-});
-
-// --- Copy link button ---
-const copyBtn = document.getElementById('copyBtn'); 
-copyBtn.addEventListener('click', async () => {
-    const imdbID = input.value.trim();
-    if(!imdbID){
-        alert("Pangita sag salida dawg");
-        return;
-    }
-    const shareURL = `${window.location.origin}${window.location.pathname}?imdb=${encodeURIComponent(imdbID)}`;
-    try {
-        await navigator.clipboard.writeText(shareURL);
-        alert("Link copied! ✅");
-    } catch {
-        const tempInput = document.createElement("input");
-        tempInput.value = shareURL;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand("copy");
-        document.body.removeChild(tempInput);
-        alert("Link copied! ✅");
     }
 });
 </script>
