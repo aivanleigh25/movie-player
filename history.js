@@ -1,0 +1,1 @@
+console.log('history.js loaded');
