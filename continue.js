@@ -1,1 +1,0 @@
-console.log('continue.js loaded');
