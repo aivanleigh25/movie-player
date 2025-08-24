@@ -85,16 +85,6 @@
       .main{margin-left:0}
       .brand{display:none}
     }
-    .homepage-link h2 {
-  font-weight: 900;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit; /* keep same color as sidebar */
-}
-.homepage-link:hover h2 {
-  text-decoration: underline;
-}
-
   </style>
 </head>
 <body>
@@ -106,23 +96,253 @@
     <button class="navbtn" id="openAbout">About</button>
     <button class="navbtn" id="openHistory">History</button> <!-- NEW -->
   </div>
-  <a href="index.html" class="navlink homepage-link"><h2><b>Movie<br>Player</b></h2></a>
-  
-  <a class="navlink" href="https://www.facebook.com/aivan.abanto1/" target="_blank">Contact</a>
-  <button class="navbtn" id="openHelp">Ad-block</button>
-  <a class="navlink" href="https://www.imdb.com/" target="_blank">IMDb</a>
-  <button class="navbtn" id="openAbout">About</button>
-  <button class="navbtn" id="openHistory">History</button> <!-- NEW -->
-</div>
 
   <!-- Continue Watching Modal --> <!-- NEW -->
   <dialog id="continueModal">
-@@ -342,71 +352,59 @@
+    <div class="modal-header">
+      <div class="modal-title">Continue Watching</div>
+      <button class="close-x" id="continueClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="continueText"></p>
+      <button class="btn primary" id="resumeBtn">▶ Resume</button>
+    </div>
+  </dialog>
+
+  <!-- History Modal --> <!-- NEW -->
+  <dialog id="historyModal">
+    <div class="modal-header">
+      <div class="modal-title">Watch History</div>
+      <button class="close-x" id="historyClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <ul id="historyList"></ul>
+    </div>
+  </dialog>
+
+
+  <main class="main">
+    <header class="header">
+      <h1>Free Movies</h1>
+      <p>Search or paste an IMDb ID (e.g., <code>tt11083552</code>), pick a server, then hit Watch.</p>
+    </header>
+
+    <section class="wrap">
+      <div class="toolbar" role="group" aria-label="Controls">
+        <input id="imdbInput" class="input" placeholder="Enter IMDb link, ID, or movie name" autocomplete="off" />
+        <button id="searchBtn" class="btn" type="button">🔍 Search</button>
+        <select id="serverSelect" class="select" aria-label="Server">
+          <option value="vidsrc">Server 1 – Vidsrc.me</option>
+          <option value="vidsrcto">Server 2 – Vidsrc.to</option>
+          <option value="2embed">Server 3 – 2Embed</option>
+          <option value="noads">Server 4 – Soon!</option>
+        </select>
+        <button id="watchBtn" class="btn primary" type="button">▶ Watch</button>
+        <button id="copyBtn" class="btn" type="button" title="Copy share link">🔗 Copy Link</button>
+        <button id="openTabBtn" class="btn ghost" type="button" title="Open player in new tab">⧉ New Tab</button>
+      </div>
+
+      <div id="results" class="results"></div>
+
+      <!-- Player hidden by default -->
+      <div class="player" id="playerContainer" style="display:none" aria-live="polite">
+        <div class="frame-wrap">
+          <iframe id="movieFrame" allow="fullscreen; picture-in-picture; clipboard-write" referrerpolicy="no-referrer" src=""></iframe>
+        </div>
+      </div>
+
+      <div class="status" id="status">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="statusText">Ready. Tip: Press <kbd>Enter</kbd> or click Search to find movies.</span>
+      </div>
+
+      <div class="footer">
+        <p><strong>Heads-up:</strong> Only embed content you have the rights to watch. Some third-party players show ads; see <em>Ad-block Help</em> for tips. If a server fails, try a different one.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Ad-block Help Modal -->
+  <dialog id="helpModal">
+    <div class="modal-header">
+      <div class="modal-title">Watch with fewer ads using uBlock Origin Lite</div>
+      <button class="close-x" id="helpClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>These steps are for Chromium-based browsers (Chrome, Edge, Brave, etc.). For Firefox, install the classic <em>uBlock Origin</em> add-on.</p>
+      <ol>
+        <li>Install <strong>uBlock Origin Lite</strong> from the Chrome Web Store.</li>
+        <li>Pin it and make sure blocking is <strong>On</strong> for this site.</li>
+        <li>Reload. Most popups/banners should be gone.</li>
+      </ol>
+    </div>
+  </dialog>
+
+  <!-- About Modal -->
+  <dialog id="aboutModal">
+    <div class="modal-header">
+      <div class="modal-title">About this page</div>
+      <button class="close-x" id="aboutClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Search by movie title or paste IMDb ID. Click a movie card to load instantly in the player.</p>
+    </div>
+  </dialog>
+
+<script>
+const $ = sel => document.querySelector(sel);
+
+// Modal logic
+const helpModal = $('#helpModal');
+const aboutModal = $('#aboutModal');
+const openHelpBtn = $('#openHelp');
+const openAboutBtn = $('#openAbout');
+const helpClose = $('#helpClose');
+const aboutClose = $('#aboutClose');
+
+openHelpBtn.addEventListener('click', () => helpModal.showModal());
+openAboutBtn.addEventListener('click', () => aboutModal.showModal());
+helpClose.addEventListener('click', () => helpModal.close());
+aboutClose.addEventListener('click', () => aboutModal.close());
+
+const input = $('#imdbInput');
+const select = $('#serverSelect');
+const frame = $('#movieFrame');
+const statusText = $('#statusText');
+const resultsDiv = $('#results');
+
+const API_KEY = "6452370c23b5a8497b9a201cf46fba42";
+const TMDB_SEARCH = "https://api.themoviedb.org/3/search/movie?api_key="+API_KEY+"&query=";
+const TMDB_DETAILS = id => `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}`;
+
+const extractIMDb = (str='') => {
+  const m = String(str).match(/tt\d{7,8}/i);
+  return m ? m[0] : '';
+};
+
+function buildURL(server, imdbID, season = null, episode = null) {
+  let raw = `https://vidsrc.in/embed/${imdbID}`;
+  if (season && episode) {
+    raw = `https://vidsrc.in/embed/${imdbID}/${season}-${episode}/`;
+  }
+  switch(server){
+    case 'vidsrc':
+      return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
+    case 'vidsrcto':
+      return `https://vidsrc.to/embed/movie/${imdbID}`;
+    case '2embed':
+      return `https://www.2embed.cc/embed/${imdbID}`;
+    case 'noads':
+      return `https://vid-src-embeds-no-ads-demo.vercel.app/embed?url=${encodeURIComponent(raw)}`;
+    default:
+      return '';
+  }
+}
+const setStatus = (msg) => statusText.textContent = msg;
+
+function loadFromFields(imdbIDOverride){
+  const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
+  if(!imdbID){ alert('Please enter a valid IMDb ID.'); return; }
+  const embedURL = buildURL(select.value, imdbID);
+  if(!embedURL){ alert('Unknown server selected.'); return; }
+  frame.src = embedURL;
+  $('#playerContainer').style.display = "block"; // show player
+  setStatus(`Loaded ${imdbID} on ${select.options[select.selectedIndex].text}.`);
+}
+
+$('#watchBtn').addEventListener('click', () => loadFromFields());
+$('#searchBtn').addEventListener('click', () => {
+  const query = input.value.trim();
+  if (extractIMDb(query)) {
+    loadFromFields();
+  } else {
+    searchTMDB(query);
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key==='Enter' && document.activeElement===input){
+    e.preventDefault();
+    if(extractIMDb(input.value.trim())) loadFromFields();
+    else searchTMDB(input.value.trim());
+  }
+});
+
+async function searchTMDB(query){
+  if(!query) return;
+  setStatus("Searching…");
+  const res = await fetch(TMDB_SEARCH+encodeURIComponent(query));
+  const data = await res.json();
+  resultsDiv.innerHTML="";
+  if(!data.results || !data.results.length){
+    setStatus("No results.");
+    return;
+  }
+  data.results.forEach(m => {
+    if(!m.poster_path) return;
+    const div = document.createElement("div");
+    div.className = "movie";
+    div.innerHTML = `<img src="https://image.tmdb.org/t/p/w342${m.poster_path}"><div class="movie-title">${m.title}</div>`;
+    div.onclick = async () => {
+      const detRes = await fetch(TMDB_DETAILS(m.id));
+      const det = await detRes.json();
+      if(det.imdb_id){
+        input.value = det.imdb_id;
+        loadFromFields(det.imdb_id);
+        resultsDiv.innerHTML = "";
+      } else {
+        setStatus("No IMDb ID found for this movie.");
+      }
+    };
+    resultsDiv.appendChild(div);
+  });
+  setStatus("Click a movie to watch.");
+}
+
+// Load trending movies on homepage
+async function loadTrending() {
+  setStatus("Loading trending movies…");
+  const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}`);
+  const data = await res.json();
+  resultsDiv.innerHTML="";
+  if(!data.results || !data.results.length){
+    setStatus("No trending movies found.");
+    return;
+  }
+  data.results.forEach(m => {
+    if(!m.poster_path) return;
+    const div = document.createElement("div");
+    div.className = "movie";
+    div.innerHTML = `<img src="https://image.tmdb.org/t/p/w342${m.poster_path}"><div class="movie-title">${m.title}</div>`;
+    div.onclick = async () => {
+      const detRes = await fetch(TMDB_DETAILS(m.id));
+      const det = await detRes.json();
+      if(det.imdb_id){
+        input.value = det.imdb_id;
+        loadFromFields(det.imdb_id);
+        resultsDiv.innerHTML = "";
+      } else {
+        setStatus("No IMDb ID found for this movie.");
+      }
+    };
+    resultsDiv.appendChild(div);
+  });
+  setStatus("Trending this week:");
+}
+window.addEventListener('DOMContentLoaded', loadTrending);
+// --- NEW: Continue Watching + History feature ---
+const historyModal = $('#historyModal');
+const historyClose = $('#historyClose');
+const openHistoryBtn = $('#openHistory');
+const historyList = $('#historyList');
+
+const continueModal = $('#continueModal');
+const continueClose = $('#continueClose');
+const continueText = $('#continueText');
 const resumeBtn = $('#resumeBtn');
 
 openHistoryBtn.addEventListener('click', () => {
   renderHistory();
-  loadHistory();
   historyModal.showModal();
 });
 historyClose.addEventListener('click', () => historyModal.close());
@@ -135,40 +355,23 @@ function saveHistory(imdbID, title){
   if(history.length > 20) history.pop();
   localStorage.setItem('watchHistory', JSON.stringify(history));
   localStorage.setItem('lastWatch', JSON.stringify({ imdbID, title }));
-  let hist = JSON.parse(localStorage.getItem('history') || "[]");
-  hist.unshift({
-    imdbID,
-    title: title || imdbID,
-    time: new Date().toLocaleString()
-  });
-  hist = hist.slice(0, 20); // keep last 20
-  localStorage.setItem('history', JSON.stringify(hist));
-  localStorage.setItem('lastWatch', JSON.stringify(hist[0]));
 }
 
 function renderHistory(){
   let history = JSON.parse(localStorage.getItem('watchHistory') || "[]");
-function loadHistory(){
   historyList.innerHTML = "";
   if(!history.length){
-  let hist = JSON.parse(localStorage.getItem('history') || "[]");
-  if(!hist.length){
     historyList.innerHTML = "<li>No history yet.</li>";
     return;
   }
   history.forEach(h => {
-  hist.forEach(item => {
     const li = document.createElement("li");
     const d = new Date(h.time).toLocaleString();
     li.textContent = `${h.title || h.imdbID} — ${d}`;
     li.style.cursor = "pointer";
-    li.textContent = `${item.title} — ${item.time}`;
-    li.className = "cursor-pointer hover:underline";
     li.onclick = () => {
       input.value = h.imdbID;
       loadFromFields(h.imdbID);
-      input.value = item.imdbID;
-      loadFromFields(item.imdbID);
       historyModal.close();
     };
     historyList.appendChild(li);
@@ -181,6 +384,7 @@ loadFromFields = function(imdbIDOverride){
   _oldLoad(imdbIDOverride);
   const imdbID = imdbIDOverride || extractIMDb(input.value.trim());
   if(imdbID){
+    saveHistory(imdbID, document.querySelector(".header h1").textContent || imdbID);
     // Try to grab the currently selected movie title from results
     let currentTitle = "";
     const activeCard = resultsDiv.querySelector(".movie-title");
@@ -193,18 +397,28 @@ loadFromFields = function(imdbIDOverride){
 window.addEventListener('DOMContentLoaded', () => {
   const last = JSON.parse(localStorage.getItem('lastWatch') || "null");
   if(last){
-    continueText.textContent = `You last watched: ${last.title || last.imdbID}. Do you want to resume?`;
-    continueModal.showModal();
-    resumeBtn.onclick = () => {
+    // set popup text
+    document.getElementById('continueText').textContent = `Resume "${last.title || last.imdbID}"?`;
+    
+    // show popup
+    document.getElementById('resumePopup').classList.remove('hidden');
+    
+    // resume button
+    document.getElementById('resumeBtn').onclick = () => {
       input.value = last.imdbID;
-      loadFromFields(last.imdbID); // this will reload the iframe
-      continueModal.close();
+      loadFromFields(last.imdbID); // load movie
+      document.getElementById('resumePopup').classList.add('hidden');
+    };
+
+    // close button
+    document.getElementById('resumeClose').onclick = () => {
+      document.getElementById('resumePopup').classList.add('hidden');
     };
   }
 });
+
 
 </script>
 </body>
 </html>
 ~
-
