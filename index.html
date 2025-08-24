@@ -149,10 +149,10 @@
         <input id="imdbInput" class="input" placeholder="Enter IMDb link, ID, or movie name" autocomplete="off" />
         <button id="searchBtn" class="btn" type="button">🔍 Search</button>
         <select id="serverSelect" class="select" aria-label="Server">
-          <option value="vidsrc">Server 1 – Vidsrc.me</option>
-          <option value="vidsrcto">Server 2 – Vidsrc.to</option>
+          <option value="vidsrc">Server 1 – Vidsrc.to</option>
+          <option value="vidsrcto">Server 2 – Vidsrc.me</option>
           <option value="2embed">Server 3 – 2Embed</option>
-          <option value="noads">Server 4 – Soon!</option>
+          <option value="noads">Server 4 – Test(tryi basin way ads haha)</option>
         </select>
         <button id="watchBtn" class="btn primary" type="button">▶ Watch</button>
         <button id="copyBtn" class="btn" type="button" title="Copy share link">🔗 Copy Link</button>
@@ -254,10 +254,10 @@ function buildURL(server, imdbID, season = null, episode = null) {
     raw = `https://vidsrc.in/embed/${imdbID}/${season}-${episode}/`;
   }
   switch(server){
-    case 'vidsrc':
-      return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
     case 'vidsrcto':
       return `https://vidsrc.to/embed/movie/${imdbID}`;
+    case 'vidsrc':
+      return `https://vidsrc.me/embed/movie?imdb=${imdbID}`;
     case '2embed':
       return `https://www.2embed.cc/embed/${imdbID}`;
     case 'noads':
